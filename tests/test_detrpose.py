@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from hepose.detrpose import parse_result
+from hepose.detrpose import DetrposeAdapter, local_settings, parse_result
 
 
 def result_fixture(count=1):
@@ -40,6 +40,28 @@ def test_detrpose_thresholds_people_without_creating_joint_confidence():
 def test_detrpose_empty_and_multiple_people():
     assert parse_result(result_fixture(0), 96, 128).people == ()
     assert len(parse_result(result_fixture(2), 96, 128).people) == 2
+
+
+def test_detrpose_missing_or_wrong_weights_fail_before_importing_models(tmp_path, monkeypatch):
+    def forbidden_import(name):
+        raise AssertionError(f"model import before asset validation: {name}")
+
+    monkeypatch.setattr("hepose.detrpose.importlib.import_module", forbidden_import)
+    weights = tmp_path / "model.safetensors"
+    settings = {"weights": str(weights), "repository": str(tmp_path)}
+    with pytest.raises(FileNotFoundError):
+        DetrposeAdapter("cuda:0", settings)
+    weights.write_bytes(b"not an official checkpoint")
+    with pytest.raises(ValueError, match="SHA256"):
+        DetrposeAdapter("cuda:0", settings)
+
+
+def test_detrpose_n_rejects_a_different_config_or_static_input_size(tmp_path):
+    settings = {"weights": "model.safetensors", "repository": str(tmp_path)}
+    with pytest.raises(ValueError):
+        local_settings({**settings, "config": str(tmp_path / "other-model.py")})
+    with pytest.raises(ValueError):
+        local_settings({**settings, "input_size": 320})
 
 
 @pytest.mark.parametrize("failure", ["joints", "count", "dimensions", "shape", "nan", "score"])

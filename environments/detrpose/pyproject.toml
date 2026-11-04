@@ -1,0 +1,26 @@
+[project]
+name = "hepose-detrpose-runtime"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "he-pose-mtg",
+    "detrpose==0.0.1",
+    "torch==2.14.1+cu126",
+    "torchvision==0.29.1+cu126",
+    "numpy==2.4.6",
+    "opencv-python==4.14.0.94",
+]
+
+[tool.uv.sources]
+he-pose-mtg = { path = "../..", editable = true }
+detrpose = { path = "../../third_party/DETRPose", editable = true }
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv]
+build-constraint-dependencies = ["setuptools==84.2.1", "wheel==0.45.1"]

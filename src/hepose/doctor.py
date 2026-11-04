@@ -69,6 +69,10 @@ def inspect(
             from hepose.yolo26 import inspect_yolo26
 
             result["models"]["yolo26"] = inspect_yolo26(settings or {}, device)
+        if "detrpose" in selected:
+            from hepose.detrpose import inspect_detrpose
+
+            result["models"]["detrpose"] = inspect_detrpose(settings or {}, device)
         checks["torch"] = module_check("torch")
         if device.startswith("cuda:"):
             try:

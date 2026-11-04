@@ -1,0 +1,85 @@
+{
+  "model_id": "detrpose",
+  "architecture": "DETRPose-N (COCO)",
+  "upstream_commit": "da12e0cd29864b1d3a289c562c34d423371a4157",
+  "upstream_url": "https://github.com/SebastianJanampa/DETRPose/tree/da12e0cd29864b1d3a289c562c34d423371a4157",
+  "license": "Apache-2.0",
+  "license_url": "https://github.com/SebastianJanampa/DETRPose/blob/da12e0cd29864b1d3a289c562c34d423371a4157/LICENSE",
+  "configuration": "detrpose/configs/detrpose/detrpose_hgnetv2_n.py",
+  "hf_repository": "SebasJanampa/DETRPose_N_COCO",
+  "hf_revision": "8e11f255908c7869d9a257b2669a9012957b6d0a",
+  "weights": {
+    "filename": "model.safetensors",
+    "url": "https://huggingface.co/SebasJanampa/DETRPose_N_COCO/resolve/8e11f255908c7869d9a257b2669a9012957b6d0a/model.safetensors",
+    "expected_sha256": "b618ccec659b42e92372290645c3c4712813571ecda914bf3ffa52d1173e20fc",
+    "expected_size_bytes": 16677992
+  },
+  "hf_configuration": {
+    "url": "https://huggingface.co/SebasJanampa/DETRPose_N_COCO/resolve/8e11f255908c7869d9a257b2669a9012957b6d0a/config.json",
+    "sha256": "eb2801c0575dfff75b9d18a5c88aae6a94f2db7b91e29b40718cee171c8f0343",
+    "role": "archived official model configuration; runtime uses pinned upstream N config"
+  },
+  "upstream_patches": [
+    {
+      "path": "patches/detrpose/local-safetensors.patch",
+      "sha256": "20dbd6a0e13e4cd496cee5a7c7f90428848db376bcc07eece0f43091adef32eb",
+      "reason": "read official local safetensors using strict=True, avoiding auto-download; no model numerical changes",
+      "modified_file": "detrpose/engine/model.py",
+      "modified_file_sha256": "e74c4898880c877bc50967615bb1262f4291e90abc56219dacea4fda2ecb8b11"
+    }
+  ],
+  "reference_environment": {
+    "python": "3.11",
+    "torch": "2.14.1+cu126",
+    "torchvision": "0.29.1+cu126",
+    "input_size": [
+      640,
+      640
+    ],
+    "precision": "float32",
+    "batch_size": 1,
+    "person_confidence_threshold": 0.5,
+    "joint_confidence": null,
+    "bbox": null,
+    "visibility": null
+  },
+  "installed_package_license_metadata": {
+    "detrpose": {
+      "version": "0.0.1",
+      "declared_license": "APACHE-2.0"
+    },
+    "torch": {
+      "version": "2.14.1+cu126",
+      "declared_license": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT"
+    },
+    "torchvision": {
+      "version": "0.29.1+cu126",
+      "declared_license": "BSD"
+    },
+    "numpy": {
+      "version": "2.4.6",
+      "declared_license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0"
+    },
+    "opencv-python": {
+      "version": "4.14.0.94",
+      "declared_license": "Apache 2.0"
+    },
+    "safetensors": {
+      "version": "0.8.0",
+      "declared_license": null
+    },
+    "huggingface-hub": {
+      "version": "2.4.0",
+      "declared_license": "Apache-2.0"
+    },
+    "omegaconf": {
+      "version": "2.4.0",
+      "declared_license": null
+    },
+    "iopath": {
+      "version": "0.1.10",
+      "declared_license": "MIT licensed, as found in the LICENSE file"
+    }
+  },
+  "package_license_metadata_source": "installed wheel METADATA; full notices are included in pinned package distributions"
+}

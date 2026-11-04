@@ -113,6 +113,8 @@ def test_render_boundary_is_visibly_distinct():
         "r", "test-stub", 0, 0, 96, 64, status="not_estimated", reason="temporal_boundary"
     )
     assert not np.array_equal(draw_poses(image, success), draw_poses(image, boundary))
+
+
 def test_render_preserves_joints_without_fabricating_a_bbox():
     image = np.zeros((64, 96, 3), dtype=np.uint8)
     points = (Keypoint("left_shoulder", 30, 30), Keypoint("left_elbow", 40, 40))
@@ -122,4 +124,3 @@ def test_render_preserves_joints_without_fabricating_a_bbox():
     assert rendered[35, 35].any()
     assert not image.any()
     assert '"bbox": null' in result.to_json()
-

@@ -1,0 +1,16 @@
+diff --git a/detrpose/engine/model.py b/detrpose/engine/model.py
+index 2e9478a..3b46866 100644
+--- a/detrpose/engine/model.py
++++ b/detrpose/engine/model.py
+@@ -106,7 +106,10 @@ class DETR(object):
+             model = HFModel.from_pretrained(self.cfg.public.hf_model, config=hf_config)
+         else:
+             model = HFModel(hf_config)
+-            if 'pt' in resume or 'pth' in resume:
++            if resume.endswith('.safetensors'):
++                from safetensors.torch import load_model
++                load_model(model, resume, strict=True, device='cpu')
++            elif 'pt' in resume or 'pth' in resume:
+                 ckpt = torch.load(resume, map_location='cpu')
+                 if 'ema' in ckpt:
+                     model.model.load_state_dict(ckpt['ema'])

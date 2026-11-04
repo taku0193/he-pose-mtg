@@ -49,7 +49,7 @@ class CliTests(unittest.TestCase):
         data = json.loads(result.stdout)
         self.assertEqual(set(data["models"]), {"yolo26", "detrpose", "tar-vitpose"})
         self.assertEqual(data["models"]["yolo26"]["status"], "weights_missing")
-        self.assertEqual(data["models"]["detrpose"]["status"], "not_implemented")
+        self.assertEqual(data["models"]["detrpose"]["status"], "weights_missing")
         self.assertEqual(data["models"]["tar-vitpose"]["status"], "not_implemented")
 
     def test_unimplemented_run_is_not_reported_as_inference_success(self):

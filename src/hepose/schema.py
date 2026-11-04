@@ -95,7 +95,7 @@ def restore_crop(
 
 @dataclass(frozen=True, slots=True)
 class Person:
-    bbox: tuple[float, float, float, float]
+    bbox: tuple[float, float, float, float] | None
     keypoints: tuple[Keypoint, ...] = ()
     track_id: str | None = None
     joint_definition: str = "coco17"
@@ -104,12 +104,13 @@ class Person:
     crop_xyxy: tuple[float, float, float, float] | None = None
 
     def __post_init__(self) -> None:
-        if len(self.bbox) != 4:
-            raise ValueError("bbox must be xyxy")
-        for value in self.bbox:
-            finite(value, "bbox coordinate")
-        if self.bbox[2] <= self.bbox[0] or self.bbox[3] <= self.bbox[1]:
-            raise ValueError("bbox must have positive area")
+        if self.bbox is not None:
+            if len(self.bbox) != 4:
+                raise ValueError("bbox must be xyxy")
+            for value in self.bbox:
+                finite(value, "bbox coordinate")
+            if self.bbox[2] <= self.bbox[0] or self.bbox[3] <= self.bbox[1]:
+                raise ValueError("bbox must have positive area")
         for points in (self.keypoints, self.native_keypoints):
             if len({point.name for point in points}) != len(points):
                 raise ValueError("duplicate person keypoints")

@@ -32,12 +32,13 @@ def draw_poses(image, result: FrameResult, confidence_threshold: float = 0.0):
     cv2 = backend()
     output = image.copy()
     for person in result.people:
-        x1, y1, x2, y2 = person.bbox
 
         def clip(x, y):
             return (int(max(0, min(result.width - 1, x))), int(max(0, min(result.height - 1, y))))
 
-        cv2.rectangle(output, clip(x1, y1), clip(x2, y2), (200, 120, 20), 1)
+        if person.bbox is not None:
+            x1, y1, x2, y2 = person.bbox
+            cv2.rectangle(output, clip(x1, y1), clip(x2, y2), (200, 120, 20), 1)
         points = {}
         for point in person.native_keypoints or person.keypoints:
             if point.x is None or not (
