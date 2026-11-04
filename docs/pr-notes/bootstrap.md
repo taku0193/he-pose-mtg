@@ -34,7 +34,7 @@ ruffは未導入・未実行。動画I/O・骨格描画・実行パイプライ�
 
 ## 動画パイプラインを含む共通基盤の検証
 
-動画I/O・骨格描画・共通6出力、時間窓の境界、設定とモデル別Pythonの振り分けを実装した。Linuxの.venvで50件のCPUテスト、ruff check、ruff format --check、全サブコマンドのhelpを確認する。以前の「実動作と制限」「次の作業」は初期commit a207ee2時点の記録であり、今回の残作業を表さない。
+動画I/O・骨格描画・共通6出力、時間窓の境界、設定とモデル別Pythonの振り分けを実装した。Linuxの.venvで50件のCPUテスト、ruff check、ruff format --check、全サブコマンドのhelpを確認した。以前の「実動作と制限」「次の作業」は初期commit a207ee2時点の記録であり、今回の残作業を表さない。
 
 | 区切り | Redの確認内容 | Green |
 | --- | --- | --- |
@@ -57,3 +57,9 @@ uv.lockに依存版と配布物のハッシュを固定し、ビルド用setupto
 3モデルの実アダプタと公式重み、GPU推論、MacカメラとSSHライブ、ベンチマーク・比較動画・実素材・MTGガイドは未実装または未実証。初期の動画出力は固定FPS・偶数サイズのMP4で、可変FPSと全ての未知コーデックの破損検出は対象外。
 
 テスト用の画像・アダプタを実際の姿勢推定結果や性能として扱わない。共通基盤の検証完了と、必須モデルの実装完了を区別する。
+
+## 最終確認
+
+コードcommit d5fc143で、ローカルの50件（追加のsubtest 11件を含む出力）、ruff check／format、依存ロックと全CLI helpを確認した。最終生ログはwork/tdd/final-checks.logに保存した。
+
+GitHub Actionsの[Model-free checks](https://github.com/taku0193/he-pose-mtg/actions/runs/41762661596)も同じコードcommitで成功を確認した。共通基盤をmainへ統合し、次はfeat/yolo26-poseで公式モデル対応へ進む。実モデルの性能やMacカメラ・遠隔ライブの実機検証は未実施のまま。

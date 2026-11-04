@@ -13,9 +13,9 @@
 | 仕様の合意 | 既存の合意を維持して再整理済み。`docs/implementation-spec.md` v1.3が一次要件 |
 | GitHub | `https://github.com/taku0193/he-pose-mtg`、非公開 |
 | Git履歴 | 仕様確定・引き継ぎ資料をcommitし、push |
-| 共通基盤 | `chore/bootstrap`に実装。テスト・ruff・CLI helpのローカル確認済み。モデル別の実装は後続工程 |
+| 共通基盤 | `chore/bootstrap`に実装し、ローカル確認とGitHub Actions成功を確認。mainへ統合してモデル別実装へ進む |
 | Pythonプロジェクト／CLI | 共通CLI・設定・動画パイプライン実装。モデルアダプタ・ライブ・比較は未実装 |
-| 自動テスト・CI | モデル不要の50件成功、ruff成功。Linux／macOS向けCI定義あり |
+| 自動テスト・CI | モデル不要の50件・ruff成功。GitHub Actions（コードcommit d5fc143）も成功 |
 | モデルのインストール・重み | 未実施・未取得 |
 | SSH先Linux・GPU調査 | abert／GPU 0：RTX 3090／ドライバ580.178.04を確認。docs/environment-inventory.md参照 |
 | カメラ・遠隔ライブ | 未実装・未検証 |
