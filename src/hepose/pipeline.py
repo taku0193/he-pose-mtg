@@ -95,6 +95,7 @@ def run_video(
                             [lookup[index] for index in references], target_index
                         )
                         timings["adapter_ms"] = (perf_counter_ns() - adapter_started) / 1_000_000
+                        results.details.setdefault("first_adapter_call_ms", timings["adapter_ms"])
                         timings["inference_ms"] = prediction.inference_ms
                         timings["measurement_method"] = prediction.measurement_method
                         result = FrameResult(

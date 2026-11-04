@@ -43,6 +43,7 @@ def test_pipeline_writes_all_six_outputs(sample_video, tmp_path):
     adapter = TestOnlyAdapter()
     summary = run_video(sample_video, output, lambda: adapter, model_id=adapter.model_id)
     assert summary["status"] == "success"
+    assert summary["details"]["first_adapter_call_ms"] >= 0
     assert {path.name for path in output.iterdir()} == {
         "annotated.mp4",
         "poses.jsonl",
