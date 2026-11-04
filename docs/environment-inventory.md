@@ -58,4 +58,4 @@ GPU型番・UUIDとカーネルドライバは、このチャットのコマン�
 
 同じGPU 0・UUIDでFP32／640×640／batch=1の実推論が成功。公式画像APIと共通アダプタの座標一致と、375/375フレームの録画動画・6出力・再復号を確認した。証拠はoutputs/detrpose-motion-gpu、docs/experiments/detrpose-2026-11-04.json。コード・重み・パッチ・ライセンスはdocs/model-manifests/detrpose.json。
 
-TARの導入・実行、Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。DETR工程のCIはpush保留中のため未実施。
+TARの導入・実行、Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。DETR工程のCIは初回記録時点でpush保留により未実施だったが、ユーザーの公開許可により保留を解除した。push後の結果はdocs/pr-notes/public-repository.mdへ記録する。

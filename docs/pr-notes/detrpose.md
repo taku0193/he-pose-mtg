@@ -33,7 +33,7 @@ scripts/prepare_detrpose.pyが固定版コードを取得してパッチを適�
 | work/tdd/15-null-bbox-green.log | 動画・描画の9件成功 |
 | work/tdd/14-detrpose-green.log | 全75件＋11 subtests成功。モデル・GPU・ネットワークなし |
 
-単体試験は人数・閾値・元座標・null・関節数・不正な結果・欠損重み・異なるモデル設定・矩形なし描画等を確認した。ruff、CLI help、core／モデル環境のlock整合も確認する。GitHubの公開範囲確認中のため、この工程はローカルcommitのみでCI未実施。
+単体試験は人数・閾値・元座標・null・関節数・不正な結果・欠損重み・異なるモデル設定・矩形なし描画等を確認した。ruff、CLI help、core／モデル環境のlock整合も確認した。初回記録時は公開範囲の確認によりpushとCIを保留していたが、その後ユーザーが公開管理を許可した。push後のCI結果はdocs/pr-notes/public-repository.mdへ追記する。
 
 GPU検証ソースはa92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false。既存の認証・ホスト鍵確認を有効にしたSSHでtaku@abertへ接続し、同じリポジトリの専用環境から実行した。RTX 3090のUUIDは環境記録と一致。別GPUや他人のプロセスを使用・停止していない。
 
@@ -56,4 +56,4 @@ READMEの明示的な準備とhepose.local.tomlの設定を済ませ、abertの�
 .venv-detrpose/bin/python integration_tests/detrpose_smoke.py --video assets/sample/jumping-jacks-validation.mp4 --output outputs/detrpose-motion-recheck
 ```
 
-TAR、Macカメラ→SSH先GPU→Mac表示、benchmark／compare、最終3素材・MTGガイド、3人それぞれの受入確認が残る。追加pushは仕様の非公開指定と実際のpublic設定の食い違いが解消するまで保留する。
+TAR、Macカメラ→SSH先GPU→Mac表示、benchmark／compare、最終3素材・MTGガイド、3人それぞれの受入確認が残る。2026-11-04にユーザーが公開管理を許可し、追加pushの保留は解除した。

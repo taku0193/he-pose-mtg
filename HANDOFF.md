@@ -1,6 +1,6 @@
 # 実装チャットへの引き継ぎ
 
-更新日：2026-11-04。確定仕様はdocs/implementation-spec.md v1.3。最新のユーザー指示とAGENTS.mdを優先する。
+更新日：2026-11-04。確定仕様はdocs/implementation-spec.md v1.4。最新のユーザー指示とAGENTS.mdを優先する。
 
 ## 現在地
 
@@ -9,11 +9,11 @@
 | 項目 | 状態 |
 | --- | --- |
 | 作業先 | abert / taku / /home/taku/he-pose-mtg |
-| 共通基盤・モデル | YOLOとDETRの画像・動画工程をローカルmainへ統合。リモートmainは97e31a2で追加pushを保留中 |
+| 共通基盤・モデル | YOLOとDETRの画像・動画工程をローカルmainへ統合。公開管理の許可を受け、リモートへの同期を進める |
 | YOLO26n-Pose | 公式画像・反復画像動画・実際の運動動画をGPU検証済み。DETR工程で共通GPU確認処理を分離した後もGPU回帰確認 |
 | DETRPose-N | feat/detrposeで画像・動画・共通CLIを実装し、公式画像APIとの座標一致と375フレーム動画をGPU検証済み |
 | 最新のDETR実動画検証ソース | a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false |
-| 単体テスト | モデル不要75件＋11 subtests。ruff／CLI helpも確認。DETR工程のGitHub CIは未実施（push保留） |
+| 単体テスト | モデル不要75件＋11 subtests。ruff／CLI helpも確認。DETR工程のGitHub CIはpush後に確認する |
 | モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
 | 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
 | 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |
@@ -21,7 +21,7 @@
 | DETRの環境・結果 | .venv-detrpose、models/detrpose/model.safetensors、third_party/DETRPose、outputs/detrpose-motion-gpu/video |
 | 残りのモデル | TAR-ViTPoseは未実装、依存環境・重み未準備 |
 | 未完了の必須機能 | Mac遠隔ライブ、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
-| GitHub公開範囲 | 仕様は非公開。2026-11-04のAPIはpublicを返したためユーザーへ確認中。回答前に公開範囲を変更しない |
+| GitHub公開範囲 | 2026-11-04にユーザーが公開管理を明示許可。APIのpublic設定と一致し、push保留は解除済み |
 
 各モデルの実動作・TDD・制限はdocs/pr-notes/yolo26-pose.mdとdetrpose.md、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの矩形・関節confidence・visibilityは得られずnullとして保存する。公式safetensorsをローカルで読むパッチだけを加え、重み・上流・パッチのハッシュを照合する。
 
@@ -40,7 +40,7 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 ## 再開時の確認
 
 1. AGENTS.md、本書、確定仕様、Git状態を読み、未コミット変更と既存の結果を保護する。
-2. ローカルmainとfeat/detrpose、リモートとの差、最新CIを確認する。mainへ直接実装しない。push保留を勝手に解除しない。
+2. ローカルmainとモデル別ブランチ、リモートとの差、最新CIを確認する。mainへ直接実装しない。公開管理と通常pushは許可済みで、改めて承認を求めない。
 3. hepose.local.tomlと準備済み環境を確認する。既存の設定を例で上書きしない。
 4. GPU工程は許可済みのGPU 0で行う。利用不可なら理由を記録し、別GPUやCPUへ自動切替しない。
 5. 小さな機能単位でRed→Greenを実行し、work/tddとdocs/pr-notesへ記録する。単体試験はモデル・重み・GPU・ネットワークなしで実行する。
