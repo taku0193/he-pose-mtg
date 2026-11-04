@@ -21,4 +21,3 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 `chore/bootstrap` → モデル別ブランチ → `feat/remote-live` → `feat/benchmark` → `docs/mtg-materials`の順に、TDDで実装します。小さな単位でcommitし、GitHubへpushします。
 
 重み・大容量動画・認証情報はGit管理対象外です。公式ベンチマークと自前の実測値を区別します。
-
