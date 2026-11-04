@@ -62,3 +62,23 @@ repository = "third_party/TARViTPose"
     settings = load_config(path).model("tar-vitpose")
     assert settings["pretrained"] == str(tmp_path / "models/pretrain.pth")
     assert settings["detector_weights"] == str(tmp_path / "models/yolo11x.pt")
+
+
+def test_old_pytorch_still_checks_the_assigned_gpu_uuid(monkeypatch):
+    from types import SimpleNamespace
+
+    from hepose.runtime import validate_runtime_device
+
+    runtime = SimpleNamespace(
+        cuda=SimpleNamespace(
+            is_available=lambda: True,
+            device_count=lambda: 1,
+            get_device_properties=lambda index: SimpleNamespace(name="RTX 3090", total_memory=24),
+        )
+    )
+    monkeypatch.setattr(
+        "hepose.runtime._cuda_runtime_uuid", lambda runtime, index: "GPU-A", raising=False
+    )
+    assert validate_runtime_device("cuda:0", runtime, "GPU-A")["gpu_uuid"] == "GPU-A"
+    with pytest.raises(RuntimeError, match="UUID"):
+        validate_runtime_device("cuda:0", runtime, "GPU-B")
