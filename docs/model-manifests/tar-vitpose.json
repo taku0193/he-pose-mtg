@@ -135,6 +135,26 @@
     "MMPose init_model clears backbone.init_cfg before local checkpoint load; no extra MAE download is used",
     "official pretrain load reports unused backbone.cls_token; final TAR state is loaded with strict=True and all keys must match",
     "Ultralytics 8.2.92 in upstream environment predates YOLO11; use pinned 8.4.202 with official yolo11x weights",
-    "setuptools 75.8.0 retains pkg_resources required by mmengine 0.10.4"
-  ]
+    "setuptools 75.8.0 retains pkg_resources required by mmengine 0.10.4",
+    "YOLO11x Conv/BN fusion stays on CPU before transfer during first predict, matching official initialization",
+    "bbox crop rounding preserves official NumPy 1.26 float32 operations before conversion to integer bounds"
+  ],
+  "runtime_warnings": [
+    "PyTorch TypedStorage deprecation warning",
+    "PyTorch cuDNN reports an applied nvrtc.so workaround; successful execution is recorded"
+  ],
+  "replay_observation": {
+    "same_heatmap_decoder_max_error_px": 1.0172526003771054e-05,
+    "same_input_replay_peak_shift_observed": "one heatmap cell at source frame 306; full-model bitwise reproducibility is not guaranteed",
+    "final_independent_comparison": {
+      "center_frames": 371,
+      "people": 316,
+      "points": 4740,
+      "crop_match": true,
+      "max_abs_coordinate_error_px": 2.0345052064385527e-05,
+      "points_above_0_001_px": 0,
+      "exact_coordinate_match": true,
+      "scope": "independent GPU executions; coordinate variation is observed, not a GT metric"
+    }
+  }
 }

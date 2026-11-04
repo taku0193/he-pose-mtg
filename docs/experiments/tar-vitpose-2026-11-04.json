@@ -1,0 +1,373 @@
+{
+  "date": "2026-11-04",
+  "scope": "TAR Base official CLI and common offline video integration; not comparative benchmark or full project acceptance",
+  "host": "abert",
+  "execution": "authenticated host-verified SSH to the same host; assigned GPU 0",
+  "source": {
+    "git_commit": "73ee1be347634192565c8fec6bd51c457a39d0a0",
+    "dirty": false
+  },
+  "report": {
+    "status": "success",
+    "input_kind": "recorded motion; not comparative benchmark",
+    "device": "cuda:0",
+    "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+    "window": {
+      "people": 1,
+      "target_frame": 52,
+      "reference_frames": [
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "official_crop_decoder_max_abs_error_px": 2.0345052064385527e-05
+    },
+    "input_frames": 375,
+    "common_video_frames": 375,
+    "frame_counts": {
+      "success": 371,
+      "failed": 0,
+      "not_estimated": 4
+    },
+    "boundary_indices": [
+      0,
+      1,
+      373,
+      374
+    ],
+    "frames_with_people": 316,
+    "internet_connection_attempts": [],
+    "official_cli": "upstream/smoke-report.json",
+    "official_output_comparison": {
+      "center_frames": 371,
+      "people": 316,
+      "points": 4740,
+      "crop_match": true,
+      "max_abs_coordinate_error_px": 2.0345052064385527e-05,
+      "points_above_0_001_px": 0,
+      "exact_coordinate_match": true,
+      "scope": "independent GPU executions; coordinate variation is observed, not a GT metric"
+    }
+  },
+  "environment": {
+    "model_id": "tar-vitpose",
+    "requested_device": "cuda:0",
+    "device": "cuda:0",
+    "input": {
+      "path": "/home/taku/he-pose-mtg/assets/sample/jumping-jacks-validation.mp4",
+      "sha256": "67d48a46e86fe66e8d096761f0c23098097855b2d04a94a8d88bf14d00d16642"
+    },
+    "configuration": {
+      "python": "/home/taku/he-pose-mtg/.venv-tar/bin/python",
+      "weights": "/home/taku/he-pose-mtg/models/tar-vitpose/tarvitpose_b_17.pt",
+      "pretrained": "/home/taku/he-pose-mtg/models/tar-vitpose/pretrain_model_b.pth",
+      "detector_weights": "/home/taku/he-pose-mtg/models/tar-vitpose/yolo11x.pt",
+      "repository": "/home/taku/he-pose-mtg/third_party/TARViTPose",
+      "config": "/home/taku/he-pose-mtg/models/tar-vitpose/inference.yaml",
+      "device": "cuda:0",
+      "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec"
+    },
+    "application_version": "0.1.0",
+    "python": "3.11.11",
+    "python_executable": "/home/taku/he-pose-mtg/.venv-tar/bin/python",
+    "platform": "Linux-5.15.0-1114-intel-iotg-x86_64-with-glibc2.35",
+    "source": {
+      "git_commit": "73ee1be347634192565c8fec6bd51c457a39d0a0",
+      "dirty": false
+    },
+    "packages": {
+      "numpy": "1.26.4",
+      "opencv-python-headless": null,
+      "opencv-python": "4.9.0.80",
+      "torch": "2.0.1+cu118",
+      "ultralytics": "8.4.202"
+    },
+    "adapter": {
+      "model_id": "tar-vitpose",
+      "architecture": "TAR-ViTPose Base",
+      "backend": "PyTorch",
+      "device": "cuda:0",
+      "gpu": {
+        "device": "cuda:0",
+        "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+        "gpu_name": "NVIDIA GeForce RTX 3090",
+        "memory_total_bytes": 25286672384
+      },
+      "packages": {
+        "torch": "2.0.1+cu118",
+        "torchvision": "0.15.2+cu118",
+        "mmcv": "2.1.0",
+        "mmengine": "0.10.4",
+        "mmpose": "1.3.1",
+        "mmpretrain": "1.2.0",
+        "mmdet": "3.2.0",
+        "ultralytics": "8.4.202",
+        "numpy": "1.26.4",
+        "setuptools": "75.8.0"
+      },
+      "precision": "float32",
+      "upstream": {
+        "path": "/home/taku/he-pose-mtg/third_party/TARViTPose",
+        "commit": "42164c2c789a5297544dd836846e509459b0f1f3",
+        "patches": []
+      },
+      "artifacts": {
+        "weights": {
+          "path": "/home/taku/he-pose-mtg/models/tar-vitpose/tarvitpose_b_17.pt",
+          "sha256": "89387c8aded9044471163ae52f2ec970c23ccd7f6c7fff5f47dd6cdb33e87c47",
+          "size": 1619532723,
+          "source": "https://drive.google.com/file/d/1mn-P-5bDa0OrM4ctc8PYrMuh40o3l-8J/view"
+        },
+        "pretrained": {
+          "path": "/home/taku/he-pose-mtg/models/tar-vitpose/pretrain_model_b.pth",
+          "sha256": "13926fe2a435db7752a7da5e4f288df97dec9d07501b192793b4cdf97cbd07ff",
+          "size": 360049073,
+          "source": "https://drive.google.com/file/d/1S6e-bFgp1qYermBJXoI9Pwt9-Qg1DBuq/view"
+        },
+        "detector_weights": {
+          "path": "/home/taku/he-pose-mtg/models/tar-vitpose/yolo11x.pt",
+          "sha256": "7bc158aa95c0ebfdd87f70f01653c1131b93e92522dbe15c228bcd742e773a24",
+          "size": 114636239,
+          "source": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt"
+        },
+        "config": {
+          "path": "/home/taku/he-pose-mtg/models/tar-vitpose/inference.yaml",
+          "sha256": "fd4fad60ed799e350919050b855aeda7fb80960da38115b3111bfc93a5843b39"
+        }
+      },
+      "input_size": [
+        288,
+        384
+      ],
+      "temporal": {
+        "window_size": 5,
+        "step": 1,
+        "future_frames": 2,
+        "boundary": "not_estimated"
+      },
+      "bbox_enlarge_factor": 1.25,
+      "num_heads": 4,
+      "num_layers": 6,
+      "use_mask": true,
+      "use_feature_fusion": "false; loader field unused by official model",
+      "seed": 42,
+      "seed_scope": "torch CPU and assigned CUDA device",
+      "cudnn_deterministic": true,
+      "cudnn_benchmark": false,
+      "torch_deterministic_algorithms": false,
+      "cublas_workspace_config": ":4096:8",
+      "tf32": {
+        "cudnn": true,
+        "matmul": false
+      },
+      "joint_definition": "posetrack17_17slots",
+      "joint_confidence": "unavailable: null",
+      "visibility": "unavailable: null",
+      "code_license": "Apache-2.0",
+      "weights_license": "no separate declaration found in official Drive folder",
+      "detector": {
+        "architecture": "YOLO11x",
+        "input_size": 640,
+        "rect": true,
+        "precision": "float32",
+        "initialization": "official CPU fusion then assigned-device transfer at first predict",
+        "confidence": 0.25,
+        "iou": 0.7,
+        "license": "AGPL-3.0"
+      },
+      "model_forward_calls": 316,
+      "detector_inference": {
+        "count": 371,
+        "mean_ms": 14.13177485455228,
+        "p50_ms": 14.273927998146974,
+        "p95_ms": 14.52611150307348
+      },
+      "timing_scope": "inference_ms=TAR forward only; adapter_ms also includes detector and crops",
+      "gpu_peak_memory_bytes": 1069004800,
+      "memory_scope": "current process PyTorch allocator since adapter initialization",
+      "warmup": "detector official first-predict warmup only; no input frames discarded"
+    }
+  },
+  "summary": {
+    "schema_version": "1.0",
+    "run_id": "6207de3070ea4d9fa6887da1c6c5ebd6",
+    "status": "success",
+    "started_at": "2026-11-04T11:37:11.519464+00:00",
+    "finished_at": "2026-11-04T11:37:33.896990+00:00",
+    "frame_counts": {
+      "success": 371,
+      "failed": 0,
+      "not_estimated": 4
+    },
+    "last_frame_index": 374,
+    "details": {
+      "model_load_ms": 2342.437931,
+      "first_adapter_call_ms": 295.48981,
+      "source_frame_count": 375,
+      "declared_frame_count": 375,
+      "source_fps": 25.0,
+      "processing_ms": 20023.855581,
+      "processing_fps": 18.527900308671327,
+      "inference": {
+        "count": 316,
+        "mean_ms": 36.199688621714145,
+        "p50_ms": 36.24790382385254,
+        "p95_ms": 36.54248809814453
+      },
+      "total_before_summary_ms": 22377.725632,
+      "timing_scope": {
+        "processing": "decode, adapter, render, writes, output verification; no load",
+        "total_ms": "target read start to before result writes; includes window wait",
+        "inference_ms": "adapter-reported synchronized model time; null if unknown"
+      }
+    },
+    "error": null,
+    "artifacts": [
+      "annotated.mp4",
+      "environment.json",
+      "poses.jsonl",
+      "run.log",
+      "summary.json",
+      "timings.csv"
+    ]
+  },
+  "official_cli": {
+    "status": "success",
+    "source": {
+      "path": "/home/taku/he-pose-mtg/third_party/TARViTPose",
+      "commit": "42164c2c789a5297544dd836846e509459b0f1f3",
+      "patches": []
+    },
+    "artifacts": {
+      "weights": {
+        "path": "/home/taku/he-pose-mtg/models/tar-vitpose/tarvitpose_b_17.pt",
+        "sha256": "89387c8aded9044471163ae52f2ec970c23ccd7f6c7fff5f47dd6cdb33e87c47",
+        "size": 1619532723,
+        "source": "https://drive.google.com/file/d/1mn-P-5bDa0OrM4ctc8PYrMuh40o3l-8J/view"
+      },
+      "pretrained": {
+        "path": "/home/taku/he-pose-mtg/models/tar-vitpose/pretrain_model_b.pth",
+        "sha256": "13926fe2a435db7752a7da5e4f288df97dec9d07501b192793b4cdf97cbd07ff",
+        "size": 360049073,
+        "source": "https://drive.google.com/file/d/1S6e-bFgp1qYermBJXoI9Pwt9-Qg1DBuq/view"
+      },
+      "detector_weights": {
+        "path": "/home/taku/he-pose-mtg/models/tar-vitpose/yolo11x.pt",
+        "sha256": "7bc158aa95c0ebfdd87f70f01653c1131b93e92522dbe15c228bcd742e773a24",
+        "size": 114636239,
+        "source": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt"
+      },
+      "config": {
+        "path": "/home/taku/he-pose-mtg/models/tar-vitpose/inference.yaml",
+        "sha256": "fd4fad60ed799e350919050b855aeda7fb80960da38115b3111bfc93a5843b39"
+      }
+    },
+    "device": {
+      "device": "cuda:0",
+      "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+      "gpu_name": "NVIDIA GeForce RTX 3090",
+      "memory_total_bytes": 25286672384
+    },
+    "input_frames": 375,
+    "output_frames": 371,
+    "source_index_mapping": "output_index + 2; derived from pinned official loop",
+    "internet_connection_attempts": [],
+    "upstream_source_patches": [],
+    "configuration": "/home/taku/he-pose-mtg/models/tar-vitpose/inference.yaml",
+    "raw_json_warning": "official crop-relative joints and fixed visibility retained"
+  },
+  "decoder_replay_observation": {
+    "source_frame": 306,
+    "crop": [
+      197,
+      97,
+      413,
+      389
+    ],
+    "decoder_max_abs_error_same_heatmap_px": 1.0172526003771054e-05,
+    "nose_maxima": [
+      [
+        1043,
+        1.0312339067459106
+      ],
+      [
+        971,
+        1.0312800407409668
+      ]
+    ],
+    "predict_nose": [
+      302.0,
+      139.58333333333334
+    ],
+    "replay_nose": [
+      302.0,
+      136.54166666666666
+    ],
+    "official_same_heatmap_nose": [
+      302.0,
+      136.54166793823242
+    ],
+    "network_attempts": []
+  },
+  "ground_truth": null,
+  "accuracy": "N/A (no ground truth)",
+  "video_provenance": "docs/validation-assets/jumping-jacks.json",
+  "gpu_regressions": {
+    "yolo26-after-tar-gpu": {
+      "status": "success",
+      "device": "cuda:0",
+      "image_people": 4,
+      "video_frames": 3,
+      "summary_status": "success",
+      "internet_connection_attempts": [],
+      "input_kind": "official still image repeated; not recorded motion or benchmark",
+      "video_frames_with_people": 3,
+      "output": "outputs/yolo26-after-tar-gpu"
+    },
+    "detrpose-after-tar-gpu": {
+      "status": "success",
+      "device": "cuda:0",
+      "image_people": 4,
+      "official_api_parity": "keypoints match within rtol=1e-5, atol=1e-3 pixels",
+      "video_frames": 3,
+      "summary_status": "success",
+      "internet_connection_attempts": [],
+      "input_kind": "official still image repeated; not recorded motion or benchmark",
+      "video_frames_with_people": 3,
+      "output": "outputs/detrpose-after-tar-gpu"
+    }
+  },
+  "doctor_all": {
+    "ready": true,
+    "record": "work/doctor-all-gpu.json"
+  },
+  "unit_tests": {
+    "passed": 86,
+    "subtests_passed": 11
+  },
+  "ci": {
+    "sha": "73ee1be347634192565c8fec6bd51c457a39d0a0",
+    "conclusion": "success",
+    "url": "https://github.com/taku0193/he-pose-mtg/actions/runs/41822458294"
+  },
+  "remaining": [
+    "Mac remote live",
+    "benchmark",
+    "comparison video",
+    "final basic/fast/multi samples",
+    "MTG guide",
+    "three-participant acceptance"
+  ],
+  "prior_independent_replay_comparison": {
+    "center_frames": 371,
+    "people": 316,
+    "points": 4740,
+    "crop_match": true,
+    "max_abs_coordinate_error_px": 3.041665395100921,
+    "points_above_0_001_px": 1,
+    "exact_coordinate_match": false,
+    "scope": "independent GPU executions; coordinate variation is observed, not a GT metric"
+  }
+}

@@ -20,10 +20,13 @@ input_size = 640
 
 [models.tar-vitpose]
 python = ".venv-tar/bin/python"
-weights = "models/tar-vitpose/tar.pth"
+weights = "models/tar-vitpose/tarvitpose_b_17.pt"
+pretrained = "models/tar-vitpose/pretrain_model_b.pth"
+detector_weights = "models/tar-vitpose/yolo11x.pt"
 repository = "third_party/TARViTPose"
 config = "models/tar-vitpose/inference.yaml"
 device = "cuda:0"
+# gpu_uuid = "GPU-YOUR-ASSIGNED-UUID"
 
 # These are placeholders, not verified Mac SSH settings. Remote paths remain remote paths.
 [live]

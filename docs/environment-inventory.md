@@ -58,4 +58,14 @@ GPU型番・UUIDとカーネルドライバは、このチャットのコマン�
 
 同じGPU 0・UUIDでFP32／640×640／batch=1の実推論が成功。公式画像APIと共通アダプタの座標一致と、375/375フレームの録画動画・6出力・再復号を確認した。証拠はoutputs/detrpose-motion-gpu、docs/experiments/detrpose-2026-11-04.json。コード・重み・パッチ・ライセンスはdocs/model-manifests/detrpose.json。
 
-TARの導入・実行、Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。DETR工程のCIは初回記録時点でpush保留により未実施だったが、ユーザーの公開許可により保留を解除した。push後の結果はdocs/pr-notes/public-repository.mdへ記録する。
+## TAR専用環境と実GPU検証
+
+.venv-tarへPython 3.11.11、torch 2.0.1+cu118、torchvision 0.15.2+cu118、NumPy 1.26.4、OpenCV 4.9.0.80、MMCV 2.1.0、MMEngine 0.10.4、MMPose 1.3.1、MMPretrain 1.2.0を準備。MMCVは公式cu118／torch2.0のcp311 wheelを使用した。pkg_resourcesを必要とするMMEngine向けにsetuptools 75.8.0を固定した。完全な依存とハッシュはenvironments/tar-vitpose/uv.lock。
+
+旧PyTorchではプロパティからGPU UUIDを得られないため、CUDA runtimeのPCI IDとドライバUUIDで同じプロセス内デバイスを確認した。実際にGPU 0の割当UUIDと一致した。CUDA 11.8でRTX 3090のTAR BaseとYOLO11xを推論でき、3モデルのdoctorもready=true。
+
+最終実行のソース73ee1be、dirty=false。共通375枚（371成功＋境界4枚）、公式CLI371枚を保存・再復号した。人数・クロップと4,740関節の座標を照合し、当該実行の最大座標差は約0.0000204ピクセルだった。先行実行で同一入力の鼻に1セルのピーク差も観測したため、数値完全再現は保証しない。cuDNN決定性、PyTorch全体の決定性、cuBLAS設定、TF32の実際の値をenvironment.jsonに記録する。
+
+MMPose初期重みの未使用backbone.cls_token、PyTorchのTypedStorage非推奨とnvrtc.soのcuDNN回避処理の警告はログに保持した。最終TAR状態はstrict=Trueで全キー一致。ソースパッチはなく、設定の不足キーとローカルパスだけを補った。詳細はdocs/pr-notes/tar-vitpose.mdとdocs/model-manifests/tar-vitpose.json。
+
+Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。TARブランチのLinux／macOS CIは73ee1beで成功した。

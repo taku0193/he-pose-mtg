@@ -12,7 +12,7 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-04：確定仕様はv1.4。ユーザーの許可によりGitHubは公開で管理します。共通CLI・動画I/O・結果保存とYOLO26n-Pose／DETRPose-Nを実装し、abertのGPU 0（RTX 3090）で公式画像と同じ15秒・375フレームの運動動画を処理しました。必須6出力とフレーム対応を確認済みです。TAR-ViTPose、遠隔ライブ、ベンチマーク、比較動画、MTGガイドは未完了です。3人全員の実機受入確認も残っています。
+2026-11-04：確定仕様はv1.4。ユーザーの許可によりGitHubは公開で管理します。3モデルの録画動画推論を実装し、abertのGPU 0（RTX 3090）で同じ15秒・375フレームの運動動画を検証しました。TARは371フレームを処理し、前後2枚ずつの未推定区間を含め375枚を保存します。必須6出力と元フレーム対応を確認済みです。遠隔ライブ、ベンチマーク、比較動画、MTGガイド、3人全員の実機受入は未完了です。
 
 MTG資料はGoogleドキュメントのような章立ての文書とし、Markdown原稿を管理します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
 
@@ -67,7 +67,7 @@ hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPy
   --input assets/sample/jumping-jacks-validation.mp4 --output outputs/yolo26 --device cuda:0
 ```
 
-YOLO26／DETRPoseのrunは実装済みです。doctor --model allは未実装のTARも確認するため、現段階では終了コード1です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
+3モデルのrunは実装済みです。全モデルを準備したabertではdoctor --model allがready=trueです。未準備の環境では不足を報告して終了コード1です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
 
 ## YOLO26n-Poseの準備とGPU検証
 
@@ -108,6 +108,26 @@ python3 scripts/prepare_detrpose.py
 公式inference_onlyのコミット、Hugging Face上の重みの版・SHA256、Apache-2.0ライセンスは[モデル記録](docs/model-manifests/detrpose.json)に固定しています。専用環境の依存はenvironments/detrpose/uv.lockに記録します。公式配布のsafetensorsをローカルで厳密に読み込むため、読み込み箇所のみ[パッチ](patches/detrpose/local-safetensors.patch)を適用します。モデル計算・前処理・後処理は公式実装を使います。
 
 DETRPose-Nでは人物の矩形、関節confidence、visibilityが得られないため共通JSONはnullです。人物scoreで0.5を超えるものを採用し、そのscoreを関節confidenceへ転用しません。入力サイズは固定設定に合わせ640×640です。公式画像APIと共通アダプタの座標の一致、運動動画375/375フレームの出力を確認しました。詳細は[検証記録](docs/pr-notes/detrpose.md)にあります。
+
+## TAR-ViTPoseの準備とGPU検証
+
+TARはLinux x86_64・Python 3.11の独立環境を使います。初回は公式Base重み、ViTPose初期重み、YOLO11x検出器と依存パッケージを取得します。チェックポイントだけで約2.1GBです。
+
+```bash
+python3 scripts/prepare_tar_vitpose.py
+# hepose.local.tomlにtar-vitpose節を設定
+.venv/bin/python -m hepose.cli doctor --model tar-vitpose --device cuda:0 --json
+.venv/bin/python -m hepose.cli run --model tar-vitpose \
+  --input assets/sample/jumping-jacks-validation.mp4 --output outputs/tar-vitpose --device cuda:0
+# 実際の5枚窓・共通動画・公式CLIを別々に保存して検証
+.venv-tar/bin/python integration_tests/tar_vitpose_smoke.py --output outputs/tar-motion-check
+```
+
+[公式コード・全重み・SHA256・設定差分](docs/model-manifests/tar-vitpose.json)とenvironments/tar-vitpose/uv.lockに採用版を保存しました。PyTorch 2.0.1+cu118、MMPose 1.3.1、MMCV 2.1.0を使います。上流ソースのパッチはなく、公式設定の不足キーを補い、ローカルへの絶対パスを使う推論設定を準備します。USE_MASK=trueは公式の既定値です。初期重みの未使用CLSトークンと、旧PyTorchのcuDNN回避処理の警告は[検証記録](docs/pr-notes/tar-vitpose.md)に残しました。最終TARチェックポイントはstrict=Trueで全キーの一致を必須にします。
+
+入力は中心の前後2枚を含む連続5フレームです。TARへ渡す人物クロップは288×384で、同じ領域を5枚から切り出します。元画像へ座標を戻し、head_bottom／head_topを保持します。COCOの目・耳と、取得できない関節confidence／visibilityはnullです。
+
+375枚の入力に対し、共通出力は375枚、元フレーム0・1・373・374はNOT ESTIMATED、残る371枚を処理します。公式CLIの371枚の出力と生JSONも別保存します。公式の生JSONにはクロップ内座標と固定visibilityが残るため、共通JSONとして扱いません。TARの時間はオフライン推論の測定であり、将来のMac遠隔ライブ遅延と同列に比較しません。
 
 ## 動画と結果の契約
 

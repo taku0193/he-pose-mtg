@@ -9,21 +9,24 @@
 | 項目 | 状態 |
 | --- | --- |
 | 作業先 | abert / taku / /home/taku/he-pose-mtg |
-| 共通基盤・モデル | YOLOとDETRの画像・動画工程と仕様v1.4を公開GitHubのmainへpush済み。公開方針反映commitは6cc9ff0 |
+| 共通基盤・モデル | 3モデルの録画工程を実装。TARはfeat/tar-vitposeでGPU検証済み。最新GPU検証コミット73ee1beはGitHubへpush済み |
 | YOLO26n-Pose | 公式画像・反復画像動画・実際の運動動画をGPU検証済み。DETR工程で共通GPU確認処理を分離した後もGPU回帰確認 |
 | DETRPose-N | feat/detrposeで画像・動画・共通CLIを実装し、公式画像APIとの座標一致と375フレーム動画をGPU検証済み |
 | 最新のDETR実動画検証ソース | a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false |
-| 単体テスト | モデル不要75件＋11 subtests。ruff／CLI helpも確認。push後の照会時点では6cc9ff0のCI実行記録なし。成功と扱わず、最新状況をActionsで確認する |
+| 単体テスト | モデル不要86件＋11 subtests。ruff／CLI helpも確認。TAR工程のLinux／macOS CI（73ee1be）成功。最新状況をActionsで確認する |
 | モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
 | 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
 | 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |
 | YOLOの動画結果 | outputs/yolo26-motion-gpu/video、375/375処理、358フレームで人物を検出 |
 | DETRの環境・結果 | .venv-detrpose、models/detrpose/model.safetensors、third_party/DETRPose、outputs/detrpose-motion-gpu/video |
-| 残りのモデル | TAR-ViTPoseは未実装、依存環境・重み未準備 |
+| TAR-ViTPose | .venv-tar、公式Base・ViTPose初期重み・YOLO11x、公式コード無修正。設定の不足キーを補いローカルパスを使用 |
+| TARのGPU検証 | ソース73ee1be347634192565c8fec6bd51c457a39d0a0、dirty=false。共通375枚（371成功＋境界4枚）、公式CLI371枚。outputs/tar-final-gpu |
+| 全モデルのdoctor | abertの割当GPU 0で3モデルともready=true。work/doctor-all-gpu.json |
+| GitHub同期 | TARブランチは73ee1beまでpush済み。初回のInternal Server Errorは再試行で解消。mainへ統合し、以降も通常pushを続ける |
 | 未完了の必須機能 | Mac遠隔ライブ、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
 | GitHub公開範囲 | 2026-11-04にユーザーが公開管理を明示許可。APIのpublic設定と一致し、push保留は解除済み |
 
-各モデルの実動作・TDD・制限はdocs/pr-notes/yolo26-pose.mdとdetrpose.md、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの矩形・関節confidence・visibilityは得られずnullとして保存する。公式safetensorsをローカルで読むパッチだけを加え、重み・上流・パッチのハッシュを照合する。
+各モデルの実動作・TDD・制限はdocs/pr-notes/、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの取得不能な矩形・関節confidence・visibilityはnull。TARはhead_bottom／head_topをnative関節へ保持し、COCOの目・耳はnullとする。TARの境界4枚も元時間軸で保存する。
 
 ## GPUと実行経路
 
@@ -51,7 +54,6 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 
 | ブランチ | 内容 |
 | --- | --- |
-| feat/tar-vitpose | 公式再現、設定整合と明示パッチ、関節・座標・時間窓、動画検証 |
 | feat/remote-live | Macカメラ、SSHトンネル、Linuxワーカー、同一フレームへの返送・描画、切断・終了 |
 | feat/benchmark | 同一GPU・同一素材で順次測定、比較動画、表・レポート |
 | docs/mtg-materials | GoogleドキュメントのようなMTGガイドのMarkdown原稿、進行表・台本・チートシート・まとめ |
@@ -62,7 +64,7 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 
 DETRPoseの静的確認コミットはinference_onlyのda12e0cd29864b1d3a289c562c34d423371a4157。TARは42164c2c789a5297544dd836846e509459b0f1f3。採用時は再確認し、公式コード・全重み・依存版・必要パッチ・ライセンスを記録する。
 
-TARはREADMEの設定パスと実在するconfigs/posetrack17/configTARViTPoseVitB.yamlが異なり、USE_FEATURE_FUSION／USE_MASKの整合確認が必要。TAR本体のほかViTPose初期化用重みと公式人物検出器yolo11x.ptが必要。既定の5フレーム窓は前後2枚を参照し、境界は未推定のまま元時間軸へ戻す。head_bottom／head_topをCOCOの目へ置き換えず、クロップ座標を復元し、固定visibilityを推定confidenceに流用しない。
+TARは実在するBase設定を使い、USE_MASK=true（公式defaults）と、モデルでは未使用のUSE_FEATURE_FUSION=falseを推論用設定へ補った。公式Drive配布のTAR本体とViTPose初期重み、yolo11x.ptを準備済み。MMPose初期化時に未使用backbone.cls_tokenの警告が出るが、最終TAR状態はstrict=Trueで全キー一致。旧PyTorchのcuDNN回避処理の警告も記録済み。ソースパッチはない。詳細はdocs/pr-notes/tar-vitpose.md。
 
 遠隔ライブでは同じフレームIDの画像へ結果を重ねる。未処理画像は最大1枚として最新を優先する。Mac内の同じ単調時計で取得から表示APIまでを測り、Linuxの時計を直接引かない。異常・切断時はセッション所有資源を解放し、過去映像をライブとして表示し続けない。
 
