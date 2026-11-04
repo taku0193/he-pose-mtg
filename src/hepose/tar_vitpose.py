@@ -410,6 +410,12 @@ class TarVitposeAdapter:
             "seed_scope": "torch CPU and assigned CUDA device",
             "cudnn_deterministic": bool(self.runtime.backends.cudnn.deterministic),
             "cudnn_benchmark": bool(self.runtime.backends.cudnn.benchmark),
+            "torch_deterministic_algorithms": self.runtime.are_deterministic_algorithms_enabled(),
+            "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
+            "tf32": {
+                "cudnn": bool(self.runtime.backends.cudnn.allow_tf32),
+                "matmul": bool(self.runtime.backends.cuda.matmul.allow_tf32),
+            },
             "joint_definition": "posetrack17_17slots",
             "joint_confidence": "unavailable: null",
             "visibility": "unavailable: null",
