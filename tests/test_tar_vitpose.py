@@ -52,13 +52,13 @@ def test_tar_configuration_resolves_all_three_weight_paths(tmp_path):
     from hepose.config import load_config
 
     path = tmp_path / "local.toml"
-    path.write_text('''schema_version = 1
+    path.write_text("""schema_version = 1
 [models.tar-vitpose]
 weights = "models/tar.pt"
 pretrained = "models/pretrain.pth"
 detector_weights = "models/yolo11x.pt"
 repository = "third_party/TARViTPose"
-''')
+""")
     settings = load_config(path).model("tar-vitpose")
     assert settings["pretrained"] == str(tmp_path / "models/pretrain.pth")
     assert settings["detector_weights"] == str(tmp_path / "models/yolo11x.pt")

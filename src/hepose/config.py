@@ -45,7 +45,7 @@ def load_config(path: Path | None = None) -> Configuration:
     if models.keys() - set(MODEL_IDS):
         raise ValueError("unknown model in configuration")
     resolved = {}
-    path_fields = {"python", "weights", "repository", "config"}
+    path_fields = {"python", "weights", "repository", "config", "pretrained", "detector_weights"}
     for name, model in models.items():
         if not isinstance(model, dict) or model.keys() - {
             *path_fields,
