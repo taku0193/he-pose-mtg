@@ -12,7 +12,9 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-04：実装仕様書v1.3。MTG資料はGoogleドキュメントのような章立ての文書とし、編集可能なMarkdown原稿をリポジトリで管理します。現在の作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。GPU 0（RTX 3090）の使用許可と環境情報を確認し、共通CLI・結果形式・動画I/O・描画・結果保存をモデル不要のCPUテストで確認しました。実モデルの対応・重み・GPU推論・遠隔ライブは未実装または未検証です。
+2026-11-04：確定仕様はv1.3。共通CLI・動画I/O・結果保存とYOLO26n-Poseを実装し、abertのGPU 0（RTX 3090）で公式画像と15秒・375フレームの運動動画を処理しました。必須6出力とフレーム対応を確認済みです。DETRPose-N、TAR-ViTPose、遠隔ライブ、ベンチマーク、比較動画、MTGガイドは未完了です。3人全員の実機受入確認も残っています。
+
+MTG資料はGoogleドキュメントのような章立ての文書とし、Markdown原稿を管理します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
 
 確定仕様は[docs/implementation-spec.md](docs/implementation-spec.md)です。[v1.2のレビュー記録](docs/pr-notes/spec-v1.2.md)と[MTG資料形式の変更記録](docs/pr-notes/mtg-document-format.md)に修正点と確認範囲をまとめています。実装開始時は[AGENTS.md](AGENTS.md)と[HANDOFF.md](HANDOFF.md)、[CODEX_START_PROMPT.md](CODEX_START_PROMPT.md)を読んでください。
 
@@ -42,8 +44,8 @@ uv sync --frozen --extra video --extra dev
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/ruff check src tests
-.venv/bin/ruff format --check src tests
+.venv/bin/ruff check src tests scripts integration_tests
+.venv/bin/ruff format --check src tests scripts integration_tests
 .venv/bin/python -m hepose.cli --help
 .venv/bin/python -m hepose.cli doctor --role client --json
 .venv/bin/python -m hepose.cli doctor --model all --device cuda:0 --json
@@ -55,18 +57,40 @@ doctorはカメラを開かず、パッケージや重みを取得しません�
 
 ## ローカル設定とモデル環境
 
-hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPython・重み・設定ファイルの場所へ編集します。例のパスは未取得ファイルを表す仮置きです。hepose.local.tomlはGit管理外です。
+hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPython・重み・設定ファイルの場所へ編集します。既に設定がある場合は必要な項目を追記してください。各モデルは準備工程を実行するまで未取得です。hepose.local.tomlはGit管理外です。
 
 各コマンドの--configで別のTOMLを指定でき、CLIの明示値を設定より優先します。相対パスは設定ファイルのある場所を基準に解釈し、モデル別Pythonは仮想環境のリンクを保持して起動します。doctor --model allは各環境を順番に確認します。準備したモデル環境にも同じ版のheposeを導入してください。
 
 ```bash
-.venv/bin/python -m hepose.cli doctor --config hepose.local.toml --model all --json
-# モデル対応後の実行形式。現在は未実装を示す失敗ログが残ります。
+.venv/bin/python -m hepose.cli doctor --config hepose.local.toml --model yolo26 --json
 .venv/bin/python -m hepose.cli run --config hepose.local.toml --model yolo26 \
-  --input assets/sample/basic.mp4 --output outputs/yolo26 --device cuda:0
+  --input assets/sample/jumping-jacks-validation.mp4 --output outputs/yolo26 --device cuda:0
 ```
 
-runは共通パイプラインへ接続済みですが、3モデルのアダプタは未実装です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。テスト用アダプタを実モデルとして選べるCLIは用意しません。
+YOLO26のrunは実装済みです。doctor --model allは未実装のDETRPose／TARも確認するため、現段階では終了コード1です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
+
+## YOLO26n-Poseの準備とGPU検証
+
+Linux上でPython 3.11、uv、FFmpegと使用許可のあるGPUを用意します。準備時はインターネット接続が必要です。
+
+```bash
+# 固定版の専用環境、公式重み、公式画像を明示的に取得
+python3 scripts/prepare_yolo26.py
+
+# 出典・利用条件を記録した検証用動画を取得してCFRへ変換
+python3 scripts/prepare_validation_video.py
+
+# hepose.local.tomlのyolo26節を編集してから実行
+.venv/bin/python -m hepose.cli doctor --model yolo26 --device cuda:0 --json
+.venv-yolo26/bin/python integration_tests/yolo26_smoke.py \
+  --video assets/sample/jumping-jacks-validation.mp4 --output outputs/yolo26-motion-check
+```
+
+専用環境の固定版はenvironments/yolo26/uv.lock、公式コミット・重みSHA256・ライセンスは[モデル記録](docs/model-manifests/yolo26.json)にあります。Ultralytics 8.4.202、PyTorch 2.14.1+cu126、torchvision 0.29.1+cu126で確認しました。入力は640×640、batch=1、FP32です。通常実行では公式重みのSHA256を照合し、不足・不一致や指定GPUの利用不可は理由付きの失敗にします。割当GPUのUUIDを設定すると、別GPUの誤使用も検出できます。
+
+検証用動画はTaco fleur氏の[Jumping jacks and burpees](https://commons.wikimedia.org/wiki/File:Jumping_jacks_and_burpees.webm)（CC BY-SA 4.0）の冒頭15秒です。[出典・加工内容](assets/sample/jumping-jacks-ATTRIBUTION.md)と[元・変換後の識別情報](docs/validation-assets/jumping-jacks.json)を残しています。骨格を重ねた動画を持ち出すときも出典・ライセンス・加工内容を添えてください。仕様のbasic／fast／multiという最終3素材はまだ揃っていません。
+
+GPUスモークは画像の人物検出、動画の最後までの処理、元フレーム対応、出力動画の再復号を確認します。Pythonのインターネット接続呼出しも禁止・記録します。既定の30フレームは公式静止画の反復動画で、運動動画の検証には--videoを明示します。正解アノテーションがないため精度は未評価です。通常runの時間記録は残りますが、ウォームアップ20件＋本計測100件以上のモデル比較benchmarkは未実装です。
 
 ## 動画と結果の契約
 

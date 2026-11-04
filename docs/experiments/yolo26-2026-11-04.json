@@ -1,0 +1,310 @@
+{
+  "date": "2026-11-04",
+  "scope": "YOLO26n-Pose image and recorded video integration; not comparative benchmark or full project acceptance",
+  "host": "abert",
+  "gpu_execution": "existing authenticated SSH to taku@abert; host verification enabled; same repository and files",
+  "validation_assets_manifest": "docs/validation-assets/jumping-jacks.json",
+  "ground_truth": null,
+  "accuracy": "N/A (no ground truth)",
+  "internet_check_scope": "Python socket.socket.connect for AF_INET and AF_INET6 blocked during adapter image inference and local CLI video run; no attempts observed",
+  "runs": [
+    {
+      "output": "outputs/yolo26-first-gpu",
+      "report": {
+        "status": "success",
+        "device": "cuda:0",
+        "image_people": 4,
+        "video_frames": 30,
+        "summary_status": "success",
+        "internet_connection_attempts": [],
+        "input_kind": "official still image repeated; not recorded motion or benchmark",
+        "output": "outputs/yolo26-first-gpu"
+      },
+      "started_at": "2026-11-04T07:29:09.635252+00:00",
+      "finished_at": "2026-11-04T07:29:10.047978+00:00",
+      "source": {
+        "git_commit": "774ea36bb7ce8e47f8d610338e19483a6e23ea36",
+        "dirty": false
+      },
+      "input": {
+        "path": "/home/taku/he-pose-mtg/outputs/yolo26-first-gpu/repeated-image-input.mp4",
+        "sha256": "fbfa37dabe4cf8f9dbcdfad68990f3cafde730a8a1e6367b7bb50f77521cbd49"
+      },
+      "adapter": {
+        "model_id": "yolo26",
+        "architecture": "YOLO26n-Pose",
+        "backend": "PyTorch",
+        "device": "cuda:0",
+        "gpu": {
+          "device": "cuda:0",
+          "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+          "gpu_name": "NVIDIA GeForce RTX 3090",
+          "memory_total_bytes": 25286672384
+        },
+        "precision": "float32",
+        "packages": {
+          "ultralytics": "8.4.202",
+          "torch": "2.14.1+cu126",
+          "torchvision": "0.29.1+cu126"
+        },
+        "upstream_commit": "ae725d5cb20c2d849b864cd34fc15f5c55f877a5",
+        "weights": [
+          {
+            "path": "/home/taku/he-pose-mtg/models/yolo26/yolo26n-pose.pt",
+            "sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+            "size": 7878574,
+            "source": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt"
+          }
+        ],
+        "input_size": [
+          640,
+          640
+        ],
+        "rect": false,
+        "nms": false,
+        "confidence_threshold": 0.25,
+        "keypoint_threshold": 0.5,
+        "license": "AGPL-3.0",
+        "gpu_peak_memory_bytes": 85066752,
+        "memory_scope": "current process PyTorch allocator since adapter initialization",
+        "warmup": "official first-predict internal warmup; no input frames discarded"
+      },
+      "frame_counts": {
+        "success": 30,
+        "failed": 0,
+        "not_estimated": 0
+      },
+      "details": {
+        "model_load_ms": 58.782993,
+        "source_frame_count": 30,
+        "declared_frame_count": 30,
+        "source_fps": 10.0,
+        "processing_ms": 349.074228,
+        "processing_fps": 85.94160666596103,
+        "inference": {
+          "count": 30,
+          "mean_ms": 3.351027333216431,
+          "p50_ms": 3.349642996909097,
+          "p95_ms": 3.444077005406143
+        },
+        "total_before_summary_ms": 412.914692,
+        "timing_scope": {
+          "processing": "decode, adapter, render, writes, output verification; no load",
+          "total_ms": "target read start to before result writes; includes window wait",
+          "inference_ms": "adapter-reported synchronized model time; null if unknown"
+        }
+      },
+      "artifacts": [
+        "annotated.mp4",
+        "environment.json",
+        "poses.jsonl",
+        "run.log",
+        "summary.json",
+        "timings.csv"
+      ]
+    },
+    {
+      "output": "outputs/yolo26-fp32-gpu",
+      "report": {
+        "status": "success",
+        "device": "cuda:0",
+        "image_people": 4,
+        "video_frames": 3,
+        "summary_status": "success",
+        "internet_connection_attempts": [],
+        "input_kind": "official still image repeated; not recorded motion or benchmark",
+        "output": "outputs/yolo26-fp32-gpu"
+      },
+      "started_at": "2026-11-04T07:32:51.127406+00:00",
+      "finished_at": "2026-11-04T07:32:51.305152+00:00",
+      "source": {
+        "git_commit": "7f93ae70751b3d9be64386b81865b35a707ca256",
+        "dirty": false
+      },
+      "input": {
+        "path": "/home/taku/he-pose-mtg/outputs/yolo26-fp32-gpu/repeated-image-input.mp4",
+        "sha256": "4cd4f62b77b463df6cc9c62e2aaa27f1e920c3aeb33f8df7ed16597053f36c5f"
+      },
+      "adapter": {
+        "model_id": "yolo26",
+        "architecture": "YOLO26n-Pose",
+        "backend": "PyTorch",
+        "device": "cuda:0",
+        "gpu": {
+          "device": "cuda:0",
+          "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+          "gpu_name": "NVIDIA GeForce RTX 3090",
+          "memory_total_bytes": 25286672384
+        },
+        "precision": "float32",
+        "packages": {
+          "ultralytics": "8.4.202",
+          "torch": "2.14.1+cu126",
+          "torchvision": "0.29.1+cu126"
+        },
+        "upstream_commit": "ae725d5cb20c2d849b864cd34fc15f5c55f877a5",
+        "weights": [
+          {
+            "path": "/home/taku/he-pose-mtg/models/yolo26/yolo26n-pose.pt",
+            "sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+            "size": 7878574,
+            "source": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt"
+          }
+        ],
+        "input_size": [
+          640,
+          640
+        ],
+        "rect": false,
+        "nms": false,
+        "confidence_threshold": 0.25,
+        "keypoint_threshold": 0.5,
+        "license": "AGPL-3.0",
+        "gpu_peak_memory_bytes": 85066240,
+        "memory_scope": "current process PyTorch allocator since adapter initialization",
+        "warmup": "official first-predict internal warmup; no input frames discarded"
+      },
+      "frame_counts": {
+        "success": 3,
+        "failed": 0,
+        "not_estimated": 0
+      },
+      "details": {
+        "model_load_ms": 59.757929,
+        "first_adapter_call_ms": 52.474031,
+        "source_frame_count": 3,
+        "declared_frame_count": 3,
+        "source_fps": 10.0,
+        "processing_ms": 113.167461,
+        "processing_fps": 26.50938682807419,
+        "inference": {
+          "count": 3,
+          "mean_ms": 3.2243650008846694,
+          "p50_ms": 3.254748007748276,
+          "p95_ms": 3.295917598006781
+        },
+        "total_before_summary_ms": 177.961084,
+        "timing_scope": {
+          "processing": "decode, adapter, render, writes, output verification; no load",
+          "total_ms": "target read start to before result writes; includes window wait",
+          "inference_ms": "adapter-reported synchronized model time; null if unknown"
+        }
+      },
+      "artifacts": [
+        "annotated.mp4",
+        "environment.json",
+        "poses.jsonl",
+        "run.log",
+        "summary.json",
+        "timings.csv"
+      ]
+    },
+    {
+      "output": "outputs/yolo26-motion-gpu",
+      "report": {
+        "status": "success",
+        "device": "cuda:0",
+        "image_people": 4,
+        "video_frames": 375,
+        "summary_status": "success",
+        "internet_connection_attempts": [],
+        "input_kind": "recorded motion validation video; not a benchmark",
+        "video_frames_with_people": 358,
+        "output": "outputs/yolo26-motion-gpu"
+      },
+      "started_at": "2026-11-04T07:38:16.599329+00:00",
+      "finished_at": "2026-11-04T07:38:18.937137+00:00",
+      "source": {
+        "git_commit": "2753c066b14104bde1acd2f90d927e2307d4ca68",
+        "dirty": false
+      },
+      "input": {
+        "path": "/home/taku/he-pose-mtg/assets/sample/jumping-jacks-validation.mp4",
+        "sha256": "67d48a46e86fe66e8d096761f0c23098097855b2d04a94a8d88bf14d00d16642"
+      },
+      "adapter": {
+        "model_id": "yolo26",
+        "architecture": "YOLO26n-Pose",
+        "backend": "PyTorch",
+        "device": "cuda:0",
+        "gpu": {
+          "device": "cuda:0",
+          "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+          "gpu_name": "NVIDIA GeForce RTX 3090",
+          "memory_total_bytes": 25286672384
+        },
+        "precision": "float32",
+        "packages": {
+          "ultralytics": "8.4.202",
+          "torch": "2.14.1+cu126",
+          "torchvision": "0.29.1+cu126"
+        },
+        "upstream_commit": "ae725d5cb20c2d849b864cd34fc15f5c55f877a5",
+        "weights": [
+          {
+            "path": "/home/taku/he-pose-mtg/models/yolo26/yolo26n-pose.pt",
+            "sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+            "size": 7878574,
+            "source": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt"
+          }
+        ],
+        "input_size": [
+          640,
+          640
+        ],
+        "rect": false,
+        "nms": false,
+        "confidence_threshold": 0.25,
+        "keypoint_threshold": 0.5,
+        "license": "AGPL-3.0",
+        "gpu_peak_memory_bytes": 85065728,
+        "memory_scope": "current process PyTorch allocator since adapter initialization",
+        "warmup": "official first-predict internal warmup; no input frames discarded"
+      },
+      "frame_counts": {
+        "success": 375,
+        "failed": 0,
+        "not_estimated": 0
+      },
+      "details": {
+        "model_load_ms": 59.505483,
+        "first_adapter_call_ms": 63.875573,
+        "source_frame_count": 375,
+        "declared_frame_count": 375,
+        "source_fps": 25.0,
+        "processing_ms": 2271.510844,
+        "processing_fps": 165.0883600184125,
+        "inference": {
+          "count": 375,
+          "mean_ms": 3.16672940303882,
+          "p50_ms": 3.1558510090690106,
+          "p95_ms": 3.2832975033670664
+        },
+        "total_before_summary_ms": 2338.003728,
+        "timing_scope": {
+          "processing": "decode, adapter, render, writes, output verification; no load",
+          "total_ms": "target read start to before result writes; includes window wait",
+          "inference_ms": "adapter-reported synchronized model time; null if unknown"
+        }
+      },
+      "artifacts": [
+        "annotated.mp4",
+        "environment.json",
+        "poses.jsonl",
+        "run.log",
+        "summary.json",
+        "timings.csv"
+      ]
+    }
+  ],
+  "remaining": [
+    "DETRPose-N",
+    "TAR-ViTPose",
+    "Mac remote live",
+    "comparative benchmark",
+    "comparison video",
+    "basic/fast/multi final samples",
+    "MTG guide",
+    "three-participant acceptance"
+  ]
+}

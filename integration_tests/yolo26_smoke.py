@@ -1,4 +1,4 @@
-"""Opt-in real-GPU smoke: official image and a repeated-image video, never a benchmark."""
+"""Opt-in GPU smoke: official image and recorded or repeated-image video; not a benchmark."""
 
 import argparse
 import json

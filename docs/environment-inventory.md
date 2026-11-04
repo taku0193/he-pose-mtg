@@ -21,15 +21,35 @@
 
 GPU型番・UUIDとカーネルドライバは、このチャットのコマンドから/proc・PCI情報で確認した。ユーザーが提示した2026-11-04 10:59:37の端末出力では、nvidia-smiが正常動作し、GPU 0の型番・VRAM・ドライバを確認できる。提示時点でGPU使用率は0%、VRAM使用量は205 MiBだったが、常時の空き状況を保証する値ではない。
 
-このチャットのコマンド実行環境では/dev/nvidia*が見えず、nvidia-smiのドライバ通信が失敗した。ホスト自体のGPU故障や未接続とは扱わない。GPU推論はモデル環境を用意した後に確認する。
+このチャットのコマンド実行環境では/dev/nvidia*が見えず、nvidia-smiのドライバ通信が失敗した。ホスト自体のGPU故障や未接続とは扱わない。その後、既存のホスト鍵確認と認証を利用したSSH接続から、同じabert上でPyTorchのCUDA利用と実推論を確認した。Macからのライブ経路の確認とは異なる。
 
-## 未実施
+## 調査開始時点
 
-PyTorch・各モデル環境・重み取得・GPU推論・MacからのSSHライブ・Macカメラ・性能測定は未実施。開始時のPythonにはpytest・ruff・OpenCV・NumPy・PyTorchが入っていなかった。ユーザーの表示用プロセス等は停止しない。
+開始時のPythonにはpytest・ruff・OpenCV・NumPy・PyTorchが入っていなかった。共通基盤とYOLO専用環境をプロジェクト内へ準備した。ユーザーの表示用プロセス等は停止していない。
 
 
 ## 共通基盤用の仮想環境
 
 プロジェクト内の.venvへvideo・dev依存を導入した。採用版はNumPy 2.4.6、opencv-python-headless 4.14.0.94、pytest 9.2.0、ruff 0.17.3。ビルド用setuptoolsは84.2.1。Python・uvは上表の版を使用した。配布物のハッシュと他の対応Python／プラットフォーム向けの解決結果はuv.lockに記録する。
 
-この環境にPyTorch・Ultralytics等のモデル依存は導入していない。Linuxのモデル不要テスト50件とlintを確認した。Macのカメラ・表示・SSHライブや、RTX 3090でのモデル推論の実証とは区別する。
+この環境にPyTorch・Ultralytics等のモデル依存は導入していない。現在のモデル不要テストは63件＋11 subtests。Macのカメラ・表示・SSHライブの受入とは区別する。
+
+## YOLO26専用環境と実GPU検証
+
+| 項目 | 実際に確認した値 |
+| --- | --- |
+| 環境 | /home/taku/he-pose-mtg/.venv-yolo26 |
+| Python | 3.11.11 |
+| Ultralytics | 8.4.202 |
+| PyTorch / torchvision | 2.14.1+cu126 / 0.29.1+cu126 |
+| NumPy / OpenCV | 2.4.6 / opencv-python 4.14.0.94 |
+| PyTorch CUDAランタイム | 12.6。nvidia-smiの13.0はドライバの対応上限表示 |
+| 実使用GPU | cuda:0、RTX 3090、UUIDは上表と一致 |
+| 推論条件 | YOLO26n-Pose、PyTorch、FP32、batch=1、640×640、rect=false、nms=false |
+| 導入固定情報 | environments/yolo26/pyproject.tomlとuv.lock |
+| 上流・重み・ライセンス | docs/model-manifests/yolo26.json、パッチなし |
+| 実動画の証拠 | outputs/yolo26-motion-gpu/video/environment.jsonとsummary.json |
+
+公式画像で4人、公開運動動画375フレームの処理・出力を確認した。GPUピークメモリはこのプロセスのPyTorch allocatorの観測値であり、nvidia-smiの全使用量ではない。GPUを変えず、他のプロセスを停止せず実行した。
+
+DETRPose／TARの導入・実行、Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。

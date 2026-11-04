@@ -6,6 +6,9 @@ schema_version = 1
 python = ".venv-yolo26/bin/python"
 weights = "models/yolo26/yolo26n-pose.pt"
 device = "cuda:0"
+input_size = 640
+# Optional: check the UUID of your assigned GPU (not another participant's GPU).
+# gpu_uuid = "GPU-YOUR-ASSIGNED-UUID"
 
 [models.detrpose]
 python = ".venv-detrpose/bin/python"

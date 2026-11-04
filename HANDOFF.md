@@ -1,136 +1,68 @@
 # 実装チャットへの引き継ぎ
 
-更新日：2026-11-04
+更新日：2026-11-04。確定仕様はdocs/implementation-spec.md v1.3。最新のユーザー指示とAGENTS.mdを優先する。
 
-## 1. 現在地
+## 現在地
 
-仕様の整理とユーザー確認は完了。ユーザーは実装開始、GitHub管理、こまめなcommitを指示済み。その後、Linux側の作業ディレクトリで新しいチャットを開くため、引き継ぎ資料の作成を依頼した。
-
-確定仕様に基づき、共通基盤の初期実装を進めている。2026-11-04にLinux側の現在のチャットで5文書を再レビューし、仕様v1.2と関連文書を揃えた。その後、ユーザーの資料形式に関する指示を反映し、仕様v1.3へ更新した。その後、ユーザーが実装の続行とabertのGPU使用を指示した。共通CLI・データ形式・動画I/O・描画・結果保存までchore/bootstrapで実装し、モデル不要のCPUテストとlintを確認した。
+ユーザーは実装・こまめなcommit・本専用リポジトリへの通常のpushを許可済み。中断後に続行を指示し、abertのGPU使用も明示した。手元の動画はないとの回答を受け、利用条件を確認した公開素材で実動画の検証を進めた。
 
 | 項目 | 状態 |
 | --- | --- |
-| 仕様の合意 | 既存の合意を維持して再整理済み。`docs/implementation-spec.md` v1.3が一次要件 |
-| GitHub | `https://github.com/taku0193/he-pose-mtg`、非公開 |
-| Git履歴 | 仕様確定・引き継ぎ資料をcommitし、push |
-| 共通基盤 | `chore/bootstrap`に実装し、ローカル確認とGitHub Actions成功を確認。mainへ統合してモデル別実装へ進む |
-| Pythonプロジェクト／CLI | 共通CLI・設定・動画パイプライン実装。モデルアダプタ・ライブ・比較は未実装 |
-| 自動テスト・CI | モデル不要の50件・ruff成功。GitHub Actions（コードcommit d5fc143）も成功 |
-| モデルのインストール・重み | 未実施・未取得 |
-| SSH先Linux・GPU調査 | abert／GPU 0：RTX 3090／ドライバ580.178.04を確認。docs/environment-inventory.md参照 |
-| カメラ・遠隔ライブ | 未実装・未検証 |
-| サンプル動画・推論結果 | 未用意・未生成 |
-| ベンチマーク | 未測定 |
-| MTGガイド・当日資料 | 未作成。Googleドキュメントのような文書形式。Markdown原稿を管理 |
+| 作業先 | abert / taku / /home/taku/he-pose-mtg |
+| 共通基盤 | CLI、設定、動画I/O、描画、6出力。mainの97e31a2まで統合済み |
+| YOLO26n-Pose | feat/yolo26-poseで実装。公式画像・反復画像動画・実際の運動動画をGPU検証済み |
+| 最新の実動画検証ソース | 2753c066b14104bde1acd2f90d927e2307d4ca68、dirty=false |
+| 単体テスト | モデル不要63件＋11 subtests。ruff／CLI helpとLinux・macOS CIを確認 |
+| モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
+| 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
+| 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |
+| YOLOの動画結果 | outputs/yolo26-motion-gpu/video、375/375処理、358フレームで人物を検出 |
+| 残りのモデル | DETRPose-N／TAR-ViTPoseは未実装、依存環境・重み未準備 |
+| 未完了の必須機能 | Mac遠隔ライブ、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
+| GitHub公開範囲 | 仕様は非公開。2026-11-04のAPIはpublicを返したためユーザーへ確認中。回答前に公開範囲を変更しない |
 
-仕様・公式コードの静的確認に加え、共通基盤のモデル不要テスト50件、ruff、全CLI helpを実行した。実モデルが動いた実績はない。
+YOLOの実動作・TDD・制限はdocs/pr-notes/yolo26-pose.md、機械可読の証拠はdocs/experiments/yolo26-2026-11-04.jsonに記録する。これはYOLOの画像・動画工程の検証であり、全プロジェクトの完了ではない。
 
-## 2. ユーザーと確認した実行構成
+## GPUと実行経路
 
-- 参加者3人。操作端末は各自のMac。
-- 各人がSSHでLinuxへ接続し、自分に割り当てられたRTX 3090を1台使う。
-- 全員がYOLO26n-PoseとDETRPose-Nを実行する。
-- TAR-ViTPoseは動作可能な代表環境で実演する。
-- YOLO26ライブは**Macカメラ → SSH内の通信 → Linux GPU推論 → Macへ結果返送・描画・表示**。
-- Mac上でのモデル推論は必須にしない。Linux側でカメラを開く設計にしない。
-- 開催日と準備期限は未定。
+GPU 0はNVIDIA GeForce RTX 3090、UUIDはGPU-25e750aa-24f4-8a0d-edb2-f2f948526eec。ユーザーがこのGPUの使用を許可済み。ドライバ580.178.04、PyTorchのCUDAランタイム12.6で実際に推論した。表示用プロセス等は停止していない。
 
-今回ローカルコマンドでLinuxホスト名abert、ユーザーtaku、作業パス`/home/taku/he-pose-mtg`を確認した。開始状態はmain・ab821b9、未コミット変更なし。仕様更新はdocs/spec-v1.2ブランチで管理する。
+チャットのサンドボックスでは/dev/nvidia*が見えず直接のnvidia-smiは失敗するが、ホストのGPU故障や未接続ではない。既存の認証・ホスト鍵確認を使用した次のSSHから、同じabert上の環境とファイルへアクセスしてGPU推論できる。
 
-GPU 0（RTX 3090）の使用をユーザーが許可し、ドライバ580.178.04と端末上の正常なnvidia-smi出力を確認した。各Macの機種とOS・MacからのSSH疎通は未確認。現在の環境を調査して確定する。割当が判明しなければ利用者へ確認し、空いているGPUを勝手に選ばない。他の利用者のGPUやプロセスを勝手に使わない。
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UpdateHostKeys=no -o ConnectTimeout=5 taku@abert 'cd /home/taku/he-pose-mtg && .venv-yolo26/bin/python -m hepose.cli doctor --local --config hepose.local.toml --model yolo26 --device cuda:0 --json'
+```
 
-## 3. 実装を依頼された際に最初に行うこと
+Macからの接続確認ではなく、現在の実行環境からabertへの接続である。Macの機種・OS・カメラ許可・SSHライブは別途確認する。/devのファイルやディレクトリへの書込権限を要求して解決しようとしない。
 
-1. `AGENTS.md`、確定仕様、引き継ぎメモを読む。
-2. `git status`、`git branch -avv`、`git remote -v`、`git log -5 --oneline`を確認し、未コミット変更を保護する。
-3. 作業場所が本リポジトリであることを確認する。空の作業ディレクトリならGitHubからcloneし、既存の別リポジトリを上書きしない。
-4. `chore/bootstrap`の状態を確認して切り替える。リモートにだけある場合は追跡ブランチを作る。確定仕様を含む最新mainを取り込み、既存の独自commit・未コミット変更を保護したうえで着手する。
-5. Linux／Python／GPU／ドライバ／空き容量／割当を確認し、`docs/environment-inventory.md`へ記録する。秘密情報は残さない。
-6. 短い実装計画を示し、TDDで共通基盤を実装する。最初の実装に追加の仕様承認は不要。
+## 再開時の確認
 
-## 4. 最初のブランチの範囲
+1. AGENTS.md、本書、確定仕様、Git状態を読み、未コミット変更と既存の結果を保護する。
+2. mainとfeat/yolo26-poseの統合状態、最新CIを確認する。mainへ直接実装しない。
+3. hepose.local.tomlと準備済み環境を確認する。既存の設定を例で上書きしない。
+4. GPU工程は許可済みのGPU 0で行う。利用不可なら理由を記録し、別GPUやCPUへ自動切替しない。
+5. 小さな機能単位でRed→Greenを実行し、work/tddとdocs/pr-notesへ記録する。単体試験はモデル・重み・GPU・ネットワークなしで実行する。
 
-`chore/bootstrap`で、外部モデルなしで検証できる共通基盤を作る。
+既存のGPU結果ディレクトリは上書きしない。新たに試す場合はREADMEの手順と新しい出力先を使う。通常runは入力フレームを削らない。性能比較のウォームアップ20件＋本計測100件以上は後続benchmarkの条件である。
 
-- PythonパッケージとCLI help、入力検証、doctorの共通部分。
-- フレーム・人物・関節・結果・計測値・状態のスキーマ、モデルアダプタ契約。
-- 動画I/O、元フレーム番号と時刻の保存、骨格描画、JSONL／CSV出力。
-- 計時・統計の契約。取得できない値をnullにし、推論失敗と0人検出を区別する。
-- テスト専用のスタブを使ったCPU単体テスト、lint、CI。
-- READMEの実行手順とTDDのRed／Green記録。
-
-ブランチの完了時に共通テスト・lint・CLI helpを確認し、mainへ統合する。モデルが動いていない段階で、モデル推論成功や実測FPSを報告しない。
-
-## 5. 以後の順序
+## 残りの順序
 
 | ブランチ | 内容 |
 | --- | --- |
-| `feat/yolo26-pose` | 公式YOLO26n-Pose、画像・動画、共通出力 |
-| `feat/detrpose` | 公式推論版、画像 → 動画 → 共通CLI |
-| `feat/tar-vitpose` | 公式再現、必要パッチ、動画出力、関節・座標・時間軸の対応 |
-| `feat/remote-live` | Macクライアント、SSH通信、Linuxワーカー、返送、表示、終了・切断処理 |
-| `feat/benchmark` | 同一GPUで順次測定、比較動画、CSV・レポート |
-| `docs/mtg-materials` | MTGガイドとMarkdown原稿、README、進行表、台本、チートシート、まとめテンプレート |
+| feat/detrpose | 公式inference_onlyのNモデル、画像→動画→共通CLI、実GPU動画検証 |
+| feat/tar-vitpose | 公式再現、設定整合と明示パッチ、関節・座標・時間窓、動画検証 |
+| feat/remote-live | Macカメラ、SSHトンネル、Linuxワーカー、同一フレームへの返送・描画、切断・終了 |
+| feat/benchmark | 同一GPU・同一素材で順次測定、比較動画、表・レポート |
+| docs/mtg-materials | GoogleドキュメントのようなMTGガイドのMarkdown原稿、進行表・台本・チートシート・まとめ |
 
-最初はPyTorchで動作を再現する。TensorRTなどの高速化は任意。モデル環境は分離し、上流のコード・重み・設定・パッチを記録する。
+各人のMac→専用Linux GPU→Mac表示という構成を維持する。YOLO26とDETRPoseは3人全員、TARは代表環境で実証する。開催日と準備期限は未定。
 
-## 6. 再調査が必要な技術上の要点
+## 上流調査の注意点
 
-引き継ぎ元の上流確認日は2026-11-03。2026-11-04に次の同じコミットのREADMEと、TARの推論コード・設定・関節定義を再閲覧した。依存環境や重みの動作確認はしていない。
+DETRPoseの静的確認コミットはinference_onlyのda12e0cd29864b1d3a289c562c34d423371a4157。TARは42164c2c789a5297544dd836846e509459b0f1f3。採用時は再確認し、公式コード・全重み・依存版・必要パッチ・ライセンスを記録する。
 
-| 対象 | 参照した版 |
-| --- | --- |
-| DETRPose `inference_only` | `da12e0cd29864b1d3a289c562c34d423371a4157` |
-| TAR-ViTPose `main` | `42164c2c789a5297544dd836846e509459b0f1f3` |
+TARはREADMEの設定パスと実在するconfigs/posetrack17/configTARViTPoseVitB.yamlが異なり、USE_FEATURE_FUSION／USE_MASKの整合確認が必要。TAR本体のほかViTPose初期化用重みと公式人物検出器yolo11x.ptが必要。既定の5フレーム窓は前後2枚を参照し、境界は未推定のまま元時間軸へ戻す。head_bottom／head_topをCOCOの目へ置き換えず、クロップ座標を復元し、固定visibilityを推定confidenceに流用しない。
 
-TARは特に次を先に確認する。
+遠隔ライブでは同じフレームIDの画像へ結果を重ねる。未処理画像は最大1枚として最新を優先する。Mac内の同じ単調時計で取得から表示APIまでを測り、Linuxの時計を直接引かない。異常・切断時はセッション所有資源を解放し、過去映像をライブとして表示し続けない。
 
-- READMEの設定パス`configs/posetrack17/tarvitpose.yaml`と、実在する`configs/posetrack17/configTARViTPoseVitB.yaml`が一致しない。
-- 推論の設定ローダーが参照する`USE_FEATURE_FUSION`・`USE_MASK`が実在設定に見当たらなかった。公式コードを実際に動かし、必要な整合修正をパッチとして残す。
-- TAR本体だけでなくViTPose初期化用重み・人物検出器の重みが必要。公式デモの検出器は`yolo11x.pt`。
-- 既定の5フレーム窓は前後2フレームを使う。出力がない冒頭・末尾を含め、元フレーム番号で結果を対応させる。
-- 頭部の点をCOCOの目へ置き換えない。元の関節定義を保持する。
-- 上流JSONの固定可視性値を推定confidenceとして使わない。クロップ座標を元画像座標へ変換する。
-
-遠隔ライブでは、応答を同じフレームIDの画像に重ね、待機画像を滞留させない。遅延はMacの取得時刻から表示APIへの送信まで、Mac内の同一の単調時計で測る。異なるPCの時計を引かない。
-
-## 7. GitHubと報告
-
-- ユーザーによるGitHub管理・こまめなcommit・通常のpushの許可は取得済み。
-- 本リポジトリへのpushを繰り返し確認しない。公開範囲は非公開を維持する。
-- 小さな論理単位でcommitし、動作する区切りとチャット終了前にpushする。
-- mainに直接実装しない。各ブランチの目的・試験・制限を`docs/pr-notes/`に残す。
-- Red/Greenを実際に実行し、期待した失敗と意図しない失敗を区別する。
-- 重み・大容量動画・個人録画・秘密鍵・APIキーをcommitしない。
-- 各区切りで、変更内容、テスト結果、実動作、未測定、制限、commit、次の作業を日本語で報告する。
-
-## 8. 完了の扱い
-
-TARを含む必須機能が動かない場合は、原因と再現手順を記録して未完了とする。失敗ログの提出だけで実装完了にしない。事前結果を再生する場合は、その由来と自環境での未再現を明示する。
-
-インターネットなしでも準備済みの環境で実行できるようにするが、遠隔GPUライブにはMac–Linux間のネットワークとSSHが必要。SSHが使えない場合はMacに保存済みの実在結果へ切り替える。
-
-## 9. v1.2で揃えた事項
-
-- 本仕様と第17節に合わせ、本専用リポジトリへの通常のpushは許可済みと統一した。
-- 最新のチャットの作業範囲を優先し、過去の開始プロンプトだけで実装へ進まない。
-- モデル環境ごとのPythonで共通CLIを実行する。通常実行中の自動取得を抑止し、準備済みの重みを使う。
-- 出力の上書き防止、フレームと実行全体の状態、JSON／CSVの欠測、TARの境界と比較時間軸、benchmarkのウォームアップ対象を明確にした。
-- 仕様第13.1節の受入条件と第15.1節の工程別調査項目を基準に実装・検証する。現在は実装・単体テスト・実機検証・性能測定がすべて未実施。
-- 文書レビューの変更点と確認結果は`docs/pr-notes/spec-v1.2.md`を参照する。
-
-## 10. v1.3の資料形式
-
-MTG資料はGoogleドキュメントのように読み進める章立ての文書とする。編集可能なMTGガイドの原稿をMarkdownでGit管理し、Googleドキュメントにも転記できる構成にする。進行表・台本・チートシート・まとめテンプレートは本文の節に統合してもよい。資料の実際の本文とGoogleドキュメントは未作成。変更と確認の記録は`docs/pr-notes/mtg-document-format.md`に残す。
-
-## 11. 共通基盤の初期実装
-
-19件の単体テストでCLI help・doctorの区分、関節の名前対応・null・座標復元、元フレームの時間窓、計時集計、JSONL／CSV、出力保護、失敗・中断の記録を確認した。記録はdocs/pr-notes/bootstrap.mdを参照。
-
-動画I/O・骨格描画・実行パイプライン・依存版固定・ruff・CIは残作業。chore/bootstrapは未完了で、モデル環境・重み取得・GPU推論・遠隔ライブ・性能測定も未実施。ここまでのテストにモデル依存パッケージは必要ない。
-
-## 12. 動画パイプライン・設定・依存版の確定
-
-共通基盤の動画I/O・描画・6種類の結果出力を接続し、モデル不要のCPUテスト50件、ruff check／format、CLI helpを確認した。uv.lockに依存版と配布物のハッシュを保存し、Linuxのvideo環境とMacのclient環境を分けて選択する。設定形式はhepose.example.toml、導入・制限はREADMEを参照。
-
-以前の第11節は初期時点の記録。動画I/O・描画・ローカル設定・依存版固定・ruff・CI定義の残作業は今回対応した。モデル別の推論、GPU実行、ライブ、ベンチマーク、比較動画、MTGガイドは未完了。時間窓はテスト用アダプタで検証しており、実TARが動いた実績ではない。
+失敗記録を提出したことと機能完了を区別する。実在する結果だけを資料に使用し、未測定・未実施と3人分の未確認を明示する。重み・録画素材・認証情報をcommitしない。
