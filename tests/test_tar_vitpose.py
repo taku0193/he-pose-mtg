@@ -82,3 +82,21 @@ def test_old_pytorch_still_checks_the_assigned_gpu_uuid(monkeypatch):
     assert validate_runtime_device("cuda:0", runtime, "GPU-A")["gpu_uuid"] == "GPU-A"
     with pytest.raises(RuntimeError, match="UUID"):
         validate_runtime_device("cuda:0", runtime, "GPU-B")
+
+
+def test_tar_missing_or_wrong_weights_fail_before_model_import(tmp_path, monkeypatch):
+    from hepose.tar_vitpose import TarVitposeAdapter
+
+    def forbidden_import(name):
+        raise AssertionError(f"model imported before asset validation: {name}")
+
+    monkeypatch.setattr("hepose.tar_vitpose.importlib.import_module", forbidden_import)
+    settings = {
+        name: str(tmp_path / name)
+        for name in ("weights", "pretrained", "detector_weights", "repository", "config")
+    }
+    with pytest.raises(FileNotFoundError):
+        TarVitposeAdapter("cuda:0", settings)
+    (tmp_path / "weights").write_bytes(b"not the official TAR checkpoint")
+    with pytest.raises(ValueError, match="SHA256"):
+        TarVitposeAdapter("cuda:0", settings)

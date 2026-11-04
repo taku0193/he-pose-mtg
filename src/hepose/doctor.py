@@ -73,6 +73,10 @@ def inspect(
             from hepose.detrpose import inspect_detrpose
 
             result["models"]["detrpose"] = inspect_detrpose(settings or {}, device)
+        if "tar-vitpose" in selected:
+            from hepose.tar_vitpose import inspect_tar
+
+            result["models"]["tar-vitpose"] = inspect_tar(settings or {}, device)
         checks["torch"] = module_check("torch")
         if device.startswith("cuda:"):
             try:
