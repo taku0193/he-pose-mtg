@@ -36,8 +36,14 @@ class ContractTests(unittest.TestCase):
     def test_zero_people_and_temporal_boundary_have_distinct_states(self):
         empty = FrameResult("run-1", "yolo26", 0, 0, 640, 480)
         boundary = FrameResult(
-            "run-1", "tar-vitpose", 0, 0, 640, 480,
-            status="not_estimated", reason="temporal_boundary",
+            "run-1",
+            "tar-vitpose",
+            0,
+            0,
+            640,
+            480,
+            status="not_estimated",
+            reason="temporal_boundary",
         )
         self.assertEqual(json.loads(empty.to_json())["status"], "success")
         self.assertEqual(json.loads(boundary.to_json())["status"], "not_estimated")
@@ -76,7 +82,14 @@ class ContractTests(unittest.TestCase):
             FrameResult("r", "yolo26", 0, 0, 10, 10, status="failed")
         with self.assertRaises(ValueError):
             FrameResult(
-                "r", "yolo26", 0, 0, 10, 10, status="failed", reason="inference",
+                "r",
+                "yolo26",
+                0,
+                0,
+                10,
+                10,
+                status="failed",
+                reason="inference",
                 people=(Person((0, 0, 5, 5)),),
             )
 

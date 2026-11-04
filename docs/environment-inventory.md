@@ -26,3 +26,10 @@ GPU型番・UUIDとカーネルドライバは、このチャットのコマン�
 ## 未実施
 
 PyTorch・各モデル環境・重み取得・GPU推論・MacからのSSHライブ・Macカメラ・性能測定は未実施。開始時のPythonにはpytest・ruff・OpenCV・NumPy・PyTorchが入っていなかった。ユーザーの表示用プロセス等は停止しない。
+
+
+## 共通基盤用の仮想環境
+
+プロジェクト内の.venvへvideo・dev依存を導入した。採用版はNumPy 2.4.6、opencv-python-headless 4.14.0.94、pytest 9.2.0、ruff 0.17.3。ビルド用setuptoolsは84.2.1。Python・uvは上表の版を使用した。配布物のハッシュと他の対応Python／プラットフォーム向けの解決結果はuv.lockに記録する。
+
+この環境にPyTorch・Ultralytics等のモデル依存は導入していない。Linuxのモデル不要テスト50件とlintを確認した。Macのカメラ・表示・SSHライブや、RTX 3090でのモデル推論の実証とは区別する。

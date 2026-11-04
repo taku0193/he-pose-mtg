@@ -6,7 +6,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -15,7 +14,10 @@ class CliTests(unittest.TestCase):
         env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
         return subprocess.run(
             [sys.executable, "-m", "hepose.cli", *args],
-            env=env, text=True, capture_output=True, check=False,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
         )
 
     def test_help_and_subcommand_help_without_model_packages(self):
@@ -27,6 +29,10 @@ class CliTests(unittest.TestCase):
 
     def test_invalid_model_and_missing_input_are_usage_errors(self):
         result = self.run_cli("run", "--model", "unknown")
+        self.assertEqual(result.returncode, 2)
+
+    def test_implicit_device_selection_is_a_usage_error(self):
+        result = self.run_cli("doctor", "--device", "automatic")
         self.assertEqual(result.returncode, 2)
 
     def test_client_doctor_reports_separate_checks_without_cuda(self):
@@ -42,7 +48,9 @@ class CliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         data = json.loads(result.stdout)
         self.assertEqual(set(data["models"]), {"yolo26", "detrpose", "tar-vitpose"})
-        self.assertTrue(all(item["status"] == "not_implemented" for item in data["models"].values()))
+        self.assertTrue(
+            all(item["status"] == "not_implemented" for item in data["models"].values())
+        )
 
     def test_unimplemented_run_is_not_reported_as_inference_success(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -50,8 +58,15 @@ class CliTests(unittest.TestCase):
             source.write_bytes(b"not-a-real-video")
             output = Path(tmp) / "results"
             result = self.run_cli(
-                "run", "--model", "yolo26", "--input", str(source),
-                "--output", str(output), "--device", "cuda:0",
+                "run",
+                "--model",
+                "yolo26",
+                "--input",
+                str(source),
+                "--output",
+                str(output),
+                "--device",
+                "cuda:0",
             )
             self.assertEqual(result.returncode, 1)
             self.assertIn("未実装", result.stderr)

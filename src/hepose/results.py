@@ -11,8 +11,15 @@ from pathlib import Path
 from hepose.schema import SCHEMA_VERSION, FrameResult, finite
 
 TIMING_FIELDS = (
-    "decode_ms", "preprocess_ms", "detector_ms", "inference_ms", "postprocess_ms",
-    "render_ms", "write_ms", "total_ms",
+    "decode_ms",
+    "preprocess_ms",
+    "detector_ms",
+    "inference_ms",
+    "postprocess_ms",
+    "render_ms",
+    "write_ms",
+    "total_ms",
+    "adapter_ms",
 )
 
 
@@ -32,6 +39,8 @@ class RunWriter:
         self.last_frame_index = None
         self.closed = True
         self._stack = ExitStack()
+        self.details = {}
+        self._recorded_error = None
 
     def __enter__(self):
         # Serialize first so invalid metadata does not create half-initialized runs.
@@ -52,8 +61,15 @@ class RunWriter:
             )
             self._csv = csv.DictWriter(
                 self._timings,
-                fieldnames=("run_id", "frame_index", "source_time_ms", "status", "reason",
-                            *TIMING_FIELDS, "measurement_method"),
+                fieldnames=(
+                    "run_id",
+                    "frame_index",
+                    "source_time_ms",
+                    "status",
+                    "reason",
+                    *TIMING_FIELDS,
+                    "measurement_method",
+                ),
             )
             self._csv.writeheader()
             self.started_at = datetime.now(UTC).isoformat()
@@ -80,9 +96,12 @@ class RunWriter:
                 finite(timings[name], name, 0)
         line = frame.to_json()
         row = {
-            "run_id": self.run_id, "frame_index": frame.frame_index,
-            "source_time_ms": frame.source_time_ms, "status": frame.status,
-            "reason": frame.reason, **timings,
+            "run_id": self.run_id,
+            "frame_index": frame.frame_index,
+            "source_time_ms": frame.source_time_ms,
+            "status": frame.status,
+            "reason": frame.reason,
+            **timings,
         }
         self._poses.write(line + "\n")
         self._csv.writerow(row)
@@ -91,20 +110,38 @@ class RunWriter:
         self.counts[frame.status] += 1
         self.last_frame_index = frame.frame_index
 
+    def record_failure(self, error: BaseException) -> None:
+        if self.closed:
+            raise ValueError("run writer is closed")
+        self._recorded_error = error
+
     def __exit__(self, exc_type, exc_value, traceback):
-        status = "interrupted" if exc_type and issubclass(exc_type, KeyboardInterrupt) else (
-            "failed" if exc_type or self.counts["failed"] or not self.counts["success"]
-            else "success"
+        if exc_type is None and self._recorded_error is not None:
+            exc_type, exc_value = type(self._recorded_error), self._recorded_error
+        status = (
+            "interrupted"
+            if exc_type and issubclass(exc_type, KeyboardInterrupt)
+            else (
+                "failed"
+                if exc_type or self.counts["failed"] or not self.counts["success"]
+                else "success"
+            )
         )
         summary = {
-            "schema_version": SCHEMA_VERSION, "run_id": self.run_id, "status": status,
-            "started_at": self.started_at, "finished_at": datetime.now(UTC).isoformat(),
-            "frame_counts": dict(self.counts), "last_frame_index": self.last_frame_index,
-            "error": str(exc_value) if exc_type else (
-                "no successful inference frames" if not self.counts["success"] else None
+            "schema_version": SCHEMA_VERSION,
+            "run_id": self.run_id,
+            "status": status,
+            "started_at": self.started_at,
+            "finished_at": datetime.now(UTC).isoformat(),
+            "frame_counts": dict(self.counts),
+            "last_frame_index": self.last_frame_index,
+            "details": self.details,
+            "error": str(exc_value)
+            if exc_type
+            else ("no successful inference frames" if not self.counts["success"] else None),
+            "artifacts": sorted(
+                {path.name for path in self.output.iterdir() if path.is_file()} | {"summary.json"}
             ),
-            "artifacts": sorted({path.name for path in self.output.iterdir() if path.is_file()}
-                                | {"summary.json"}),
         }
         try:
             self._log.write(f"{summary['finished_at']} {status} error={summary['error']}\n")

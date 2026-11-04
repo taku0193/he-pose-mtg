@@ -5,10 +5,23 @@ import math
 from dataclasses import asdict, dataclass, replace
 
 COCO17 = (
-    "nose", "left_eye", "right_eye", "left_ear", "right_ear",
-    "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
-    "left_wrist", "right_wrist", "left_hip", "right_hip",
-    "left_knee", "right_knee", "left_ankle", "right_ankle",
+    "nose",
+    "left_eye",
+    "right_eye",
+    "left_ear",
+    "right_ear",
+    "left_shoulder",
+    "right_shoulder",
+    "left_elbow",
+    "right_elbow",
+    "left_wrist",
+    "right_wrist",
+    "left_hip",
+    "right_hip",
+    "left_knee",
+    "right_knee",
+    "left_ankle",
+    "right_ankle",
 )
 MODEL_IDS = ("yolo26", "detrpose", "tar-vitpose")
 SCHEMA_VERSION = "1.0"
@@ -73,9 +86,9 @@ def restore_crop(
     if x2 <= x1 or y2 <= y1:
         raise ValueError("crop must have positive area")
     return tuple(
-        replace(point, x=x1 + point.x * (x2 - x1) / width,
-                y=y1 + point.y * (y2 - y1) / height)
-        if point.x is not None else point
+        replace(point, x=x1 + point.x * (x2 - x1) / width, y=y1 + point.y * (y2 - y1) / height)
+        if point.x is not None
+        else point
         for point in points
     )
 

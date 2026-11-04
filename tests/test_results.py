@@ -24,10 +24,18 @@ class ResultTests(unittest.TestCase):
             output = Path(tmp) / "run"
             with RunWriter(output, "r", {"git_commit": "example", "purpose": "test"}) as writer:
                 writer.write(FrameResult("r", "yolo26", 0, 0, 32, 32))
-                writer.write(FrameResult(
-                    "r", "yolo26", 1, 40, 32, 32,
-                    people=(Person((0, 0, 10, 10)), Person((12, 12, 30, 30))),
-                ), {"inference_ms": 2.5})
+                writer.write(
+                    FrameResult(
+                        "r",
+                        "yolo26",
+                        1,
+                        40,
+                        32,
+                        32,
+                        people=(Person((0, 0, 10, 10)), Person((12, 12, 30, 30))),
+                    ),
+                    {"inference_ms": 2.5},
+                )
             rows = [json.loads(line) for line in (output / "poses.jsonl").read_text().splitlines()]
             self.assertEqual([len(row["people"]) for row in rows], [0, 2])
             with (output / "timings.csv").open(newline="") as stream:
@@ -38,7 +46,9 @@ class ResultTests(unittest.TestCase):
             self.assertEqual(summary["frame_counts"]["success"], 2)
             self.assertEqual(summary["status"], "success")
             self.assertNotIn("annotated.mp4", summary["artifacts"])
-            self.assertEqual(json.loads((output / "environment.json").read_text())["purpose"], "test")
+            self.assertEqual(
+                json.loads((output / "environment.json").read_text())["purpose"], "test"
+            )
 
     def test_existing_output_is_preserved(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -52,8 +62,10 @@ class ResultTests(unittest.TestCase):
             self.assertEqual(marker.read_text(), "existing result")
 
     def test_failure_and_interrupt_are_recorded_and_files_close(self):
-        for exception, status in [(RuntimeError("inference failed"), "failed"),
-                                  (KeyboardInterrupt(), "interrupted")]:
+        for exception, status in [
+            (RuntimeError("inference failed"), "failed"),
+            (KeyboardInterrupt(), "interrupted"),
+        ]:
             with self.subTest(status=status), tempfile.TemporaryDirectory() as tmp:
                 output = Path(tmp) / "run"
                 with self.assertRaises(type(exception)):

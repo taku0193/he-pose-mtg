@@ -1,0 +1,28 @@
+# Copy to hepose.local.toml and replace paths with prepared local environments and files.
+# Paths are relative to this file. The python entry preserves virtualenv symlinks.
+schema_version = 1
+
+[models.yolo26]
+python = ".venv-yolo26/bin/python"
+weights = "models/yolo26/yolo26n-pose.pt"
+device = "cuda:0"
+
+[models.detrpose]
+python = ".venv-detrpose/bin/python"
+weights = "models/detrpose/detrpose-n.pth"
+repository = "third_party/DETRPose"
+device = "cuda:0"
+
+[models.tar-vitpose]
+python = ".venv-tar/bin/python"
+weights = "models/tar-vitpose/tar.pth"
+repository = "third_party/TARViTPose"
+config = "models/tar-vitpose/inference.yaml"
+device = "cuda:0"
+
+# These are placeholders, not verified Mac SSH settings. Remote paths remain remote paths.
+[live]
+remote = "YOUR_SSH_ALIAS"
+remote_root = "/home/taku/he-pose-mtg"
+remote_python = "/absolute/path/to/yolo-environment/bin/python"
+camera = 0

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
-from hepose.schema import Person, TemporalContext
+from hepose.schema import Person, TemporalContext, finite
 
 
 @dataclass(frozen=True, slots=True)
@@ -14,6 +14,8 @@ class InputFrame:
     width: int
     height: int
     image: object
+    decode_ms: float | None = None
+    read_started_ns: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +23,12 @@ class Prediction:
     people: tuple[Person, ...]
     inference_ms: float | None
     measurement_method: str | None
+
+    def __post_init__(self):
+        if self.inference_ms is not None:
+            finite(self.inference_ms, "inference_ms", 0)
+            if not self.measurement_method:
+                raise ValueError("measured inference time requires a measurement method")
 
 
 class PoseAdapter(Protocol):
@@ -38,3 +46,8 @@ class PoseAdapter(Protocol):
     def close(self) -> None:
         """Release resources owned by this adapter."""
         ...
+
+
+def load_adapter(model_id: str, device: str, model_config: dict | None = None) -> PoseAdapter:
+    """Model branches will add lazy, local-weight-only implementations here."""
+    raise NotImplementedError(f"{model_id}: モデルアダプタは未実装です。")

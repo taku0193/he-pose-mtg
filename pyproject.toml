@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -30,3 +30,10 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "gpu: requires model weights and a GPU (integration_tests only)",
+    "network: requires explicitly enabled network access (integration_tests only)",
+]
+
+[tool.uv]
+conflicts = [[{ extra = "video" }, { extra = "client" }]]

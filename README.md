@@ -12,7 +12,7 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-04：実装仕様書v1.3。MTG資料はGoogleドキュメントのような章立ての文書とし、編集可能なMarkdown原稿をリポジトリで管理します。現在の作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。GPU 0（RTX 3090）の使用許可と環境情報を確認し、共通CLI・結果形式・結果保存の初期実装を進めています。モデル環境・動画I/O・実モデル推論・遠隔ライブは未実装または未検証です。
+2026-11-04：実装仕様書v1.3。MTG資料はGoogleドキュメントのような章立ての文書とし、編集可能なMarkdown原稿をリポジトリで管理します。現在の作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。GPU 0（RTX 3090）の使用許可と環境情報を確認し、共通CLI・結果形式・動画I/O・描画・結果保存をモデル不要のCPUテストで確認しました。実モデルの対応・重み・GPU推論・遠隔ライブは未実装または未検証です。
 
 確定仕様は[docs/implementation-spec.md](docs/implementation-spec.md)です。[v1.2のレビュー記録](docs/pr-notes/spec-v1.2.md)と[MTG資料形式の変更記録](docs/pr-notes/mtg-document-format.md)に修正点と確認範囲をまとめています。実装開始時は[AGENTS.md](AGENTS.md)と[HANDOFF.md](HANDOFF.md)、[CODEX_START_PROMPT.md](CODEX_START_PROMPT.md)を読んでください。
 
@@ -22,21 +22,60 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 重み・大容量動画・認証情報はGit管理対象外です。公式ベンチマークと自前の実測値を区別します。
 
-最新のチャットの依頼範囲を優先します。今回の仕様確認を終え、次の実装工程は環境調査と`chore/bootstrap`の共通基盤です。通常実行はローカルに準備済みの重みを使い、不足時に自動取得しない方針です。
+最新のチャットの依頼範囲を優先します。共通基盤の次は、モデル別ブランチで公式モデルへの対応を進めます。通常実行はローカルに準備済みの重みを使い、不足時に自動取得しない方針です。
 
-## 共通基盤の初期実装
+## 開発環境の準備
 
-Python 3.11以上で、モデルや追加パッケージを入れずに確認できます。以下はリポジトリ直下で実行します。
+Python 3.11以上とuvを使います。以下はリポジトリ直下で実行します。パッケージ取得はこの準備工程で行い、通常のCLI実行では自動取得しません。
 
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -v
-PYTHONPATH=src python3 -m hepose.cli --help
-PYTHONPATH=src python3 -m hepose.cli doctor --role client --json
-PYTHONPATH=src python3 -m hepose.cli doctor --model all --device cuda:0 --json
+# Linux：GUI不要の動画I/Oと開発ツール
+uv sync --frozen --extra video --extra dev
+
+# Mac：表示用OpenCVを使う場合（videoとclientは同時に選択しない）
+# uv sync --frozen --extra client --extra dev
 ```
 
-doctorはカメラを開かず、パッケージや重みを取得しません。不足や未実装があれば終了コード1です。run・live・benchmark・compareはhelpを確認できる段階で、実行は「未実装」として終了します。推論成功を示す機能ではありません。
+採用版と配布ファイルのハッシュはuv.lock、ビルド用setuptoolsの版はpyproject.tomlに固定しています。モデルの依存パッケージと重みはこの環境に混在させず、モデル別環境へ準備します。
 
-共通形式はschema_version=1.0で、元フレーム番号、欠測値null、関節名による対応、TAR等の時間窓を扱います。結果保存は新しい出力先を使い、既存ディレクトリを上書きしません。環境と確認元は[環境記録](docs/environment-inventory.md)、実行したRed/Greenと残作業は[共通基盤の記録](docs/pr-notes/bootstrap.md)にあります。
+## 共通基盤の確認
 
-動画I/O・骨格描画・CLIへの接続、ruff、依存版の固定、CIが次の作業です。共通基盤全体は未完了であり、mainへのコード統合条件を満たしたという報告ではありません。
+```bash
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check src tests
+.venv/bin/ruff format --check src tests
+.venv/bin/python -m hepose.cli --help
+.venv/bin/python -m hepose.cli doctor --role client --json
+.venv/bin/python -m hepose.cli doctor --model all --device cuda:0 --json
+```
+
+既定のテストはtests/だけを収集し、学習済みモデル・重み・GPU・ネットワークを使いません。テスト用の短い映像とアダプタで動画I/Oを検証しており、実モデルの推論結果や性能ではありません。外部モデルが必要な試験はintegration_tests/へ分けます。
+
+doctorはカメラを開かず、パッケージや重みを取得しません。不足や未実装があれば終了コード1です。clientの確認ではGUIのないOpenCVを表示可能とは扱いません。実際のカメラ許可・描画・SSHライブの成功は、後続工程で別途確認します。
+
+## ローカル設定とモデル環境
+
+hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPython・重み・設定ファイルの場所へ編集します。例のパスは未取得ファイルを表す仮置きです。hepose.local.tomlはGit管理外です。
+
+各コマンドの--configで別のTOMLを指定でき、CLIの明示値を設定より優先します。相対パスは設定ファイルのある場所を基準に解釈し、モデル別Pythonは仮想環境のリンクを保持して起動します。doctor --model allは各環境を順番に確認します。準備したモデル環境にも同じ版のheposeを導入してください。
+
+```bash
+.venv/bin/python -m hepose.cli doctor --config hepose.local.toml --model all --json
+# モデル対応後の実行形式。現在は未実装を示す失敗ログが残ります。
+.venv/bin/python -m hepose.cli run --config hepose.local.toml --model yolo26 \
+  --input assets/sample/basic.mp4 --output outputs/yolo26 --device cuda:0
+```
+
+runは共通パイプラインへ接続済みですが、3モデルのアダプタは未実装です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。テスト用アダプタを実モデルとして選べるCLIは用意しません。
+
+## 動画と結果の契約
+
+当初の動画入力は固定FPS、MP4出力の幅・高さは正の偶数を対象にします。奇数サイズを黙って切り落としません。読めない動画、不正なFPS、既知の総フレーム数に満たない復号終了、出力の復号検証失敗はエラーにします。可変FPSの正しい同期や、総フレーム数が不明な素材の全ての破損検出は保証しません。
+
+正常終了時の出力はannotated.mp4、poses.jsonl、timings.csv、summary.json、environment.json、run.logです。元動画のフレーム順・FPSを保ち、時間窓の境界もNOT ESTIMATED（未推定）として記録・描画します。推定可能なフレームが一つもない入力は成功にしません。出力先は新しいディレクトリを指定し、既存の結果を上書きしません。
+
+共通形式はschema_version=1.0。フレーム番号は0始まり、元時刻はframe_index/source_fps、時間の単位はmsです。関節は元画像上の名前付き座標で、対応しない点・不明な測定値はJSONでnull、CSVで空欄です。信頼度からvisibilityを推測しません。正常な0人検出・処理失敗・未推定を区別します。
+
+environment.jsonには入力SHA256、ソースのGitコミットと未コミット変更の有無、依存版、要求デバイスとアダプタが報告した実使用デバイスを分けて保存します。モデル時間が取れないときはnullとし、アダプタ全体のホスト時間で代用しません。処理全体の計測には動画・結果の書込みと出力動画の復号検証を含み、ロード時間は別記録です。
+
+環境と確認元は[環境記録](docs/environment-inventory.md)、Red/Greenと検証範囲は[共通基盤の記録](docs/pr-notes/bootstrap.md)にあります。GitHub ActionsではLinuxとmacOSで同じモデル不要のテスト、lint、CLI helpを確認します。各参加者の実機検証は別の受入条件です。
