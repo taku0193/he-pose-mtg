@@ -12,9 +12,9 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-04：5文書を再確認し、実装仕様書v1.2を確定しました。現在の作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。GPU割当・MacからのSSH・カメラ動作は未確認で、実装コード・テスト・モデル環境・推論結果はまだありません。
+2026-11-04：実装仕様書v1.3。MTG資料はGoogleドキュメントのような章立ての文書とし、編集可能なMarkdown原稿をリポジトリで管理します。現在の作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。GPU割当・MacからのSSH・カメラ動作は未確認で、実装コード・テスト・モデル環境・推論結果はまだありません。
 
-確定仕様は[docs/implementation-spec.md](docs/implementation-spec.md)です。[今回のレビュー記録](docs/pr-notes/spec-v1.2.md)に修正点と確認範囲をまとめています。実装開始時は[AGENTS.md](AGENTS.md)と[HANDOFF.md](HANDOFF.md)、[CODEX_START_PROMPT.md](CODEX_START_PROMPT.md)を読んでください。
+確定仕様は[docs/implementation-spec.md](docs/implementation-spec.md)です。[v1.2のレビュー記録](docs/pr-notes/spec-v1.2.md)と[MTG資料形式の変更記録](docs/pr-notes/mtg-document-format.md)に修正点と確認範囲をまとめています。実装開始時は[AGENTS.md](AGENTS.md)と[HANDOFF.md](HANDOFF.md)、[CODEX_START_PROMPT.md](CODEX_START_PROMPT.md)を読んでください。
 
 ## 開発方針
 
