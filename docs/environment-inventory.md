@@ -52,4 +52,10 @@ GPU型番・UUIDとカーネルドライバは、このチャットのコマン�
 
 公式画像で4人、公開運動動画375フレームの処理・出力を確認した。GPUピークメモリはこのプロセスのPyTorch allocatorの観測値であり、nvidia-smiの全使用量ではない。GPUを変えず、他のプロセスを停止せず実行した。
 
-DETRPose／TARの導入・実行、Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。
+## DETRPose専用環境と実GPU検証
+
+.venv-detrposeへ公式inference_onlyのda12e0cを導入した。torch 2.14.1+cu126、torchvision 0.29.1+cu126、safetensors 0.8.0、huggingface-hub 2.4.0。PyTorch／NumPy／OpenCVはYOLOと同じ版だが仮想環境は分離する。固定依存とbuild制約はenvironments/detrpose/pyproject.tomlとuv.lock。
+
+同じGPU 0・UUIDでFP32／640×640／batch=1の実推論が成功。公式画像APIと共通アダプタの座標一致と、375/375フレームの録画動画・6出力・再復号を確認した。証拠はoutputs/detrpose-motion-gpu、docs/experiments/detrpose-2026-11-04.json。コード・重み・パッチ・ライセンスはdocs/model-manifests/detrpose.json。
+
+TARの導入・実行、Macカメラ・遠隔ライブ、正式benchmark、3人分の実機受入は未実施。DETR工程のCIはpush保留中のため未実施。

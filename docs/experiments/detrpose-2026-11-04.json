@@ -1,0 +1,296 @@
+{
+  "date": "2026-11-04",
+  "scope": "DETRPose-N image API parity and recorded motion integration; YOLO runtime regression; not a comparative benchmark",
+  "host": "abert",
+  "execution": "existing authenticated and host-verified SSH to taku@abert; assigned GPU 0",
+  "image_input": {
+    "url": "https://raw.githubusercontent.com/ultralytics/ultralytics/ae725d5cb20c2d849b864cd34fc15f5c55f877a5/ultralytics/assets/bus.jpg",
+    "sha256": "c02019c4979c191eb739ddd944445ef408dad5679acab6fd520ef9d434bfbc63",
+    "size": 137419,
+    "path": "work/yolo26-smoke/bus.jpg"
+  },
+  "motion_input_manifest": "docs/validation-assets/jumping-jacks.json",
+  "ground_truth": null,
+  "accuracy": "N/A (no ground truth)",
+  "runs": [
+    {
+      "output": "outputs/detrpose-motion-gpu",
+      "report": {
+        "status": "success",
+        "device": "cuda:0",
+        "image_people": 4,
+        "official_api_parity": "keypoints match within rtol=1e-5, atol=1e-3 pixels",
+        "video_frames": 375,
+        "summary_status": "success",
+        "internet_connection_attempts": [],
+        "input_kind": "recorded motion validation video; not a benchmark",
+        "video_frames_with_people": 368,
+        "output": "outputs/detrpose-motion-gpu"
+      },
+      "environment": {
+        "model_id": "detrpose",
+        "requested_device": "cuda:0",
+        "device": "cuda:0",
+        "input": {
+          "path": "/home/taku/he-pose-mtg/assets/sample/jumping-jacks-validation.mp4",
+          "sha256": "67d48a46e86fe66e8d096761f0c23098097855b2d04a94a8d88bf14d00d16642"
+        },
+        "configuration": {
+          "python": "/home/taku/he-pose-mtg/.venv-detrpose/bin/python",
+          "weights": "/home/taku/he-pose-mtg/models/detrpose/model.safetensors",
+          "repository": "/home/taku/he-pose-mtg/third_party/DETRPose",
+          "device": "cuda:0",
+          "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+          "input_size": 640
+        },
+        "application_version": "0.1.0",
+        "python": "3.11.11",
+        "python_executable": "/home/taku/he-pose-mtg/.venv-detrpose/bin/python",
+        "platform": "Linux-5.15.0-1114-intel-iotg-x86_64-with-glibc2.35",
+        "source": {
+          "git_commit": "a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3",
+          "dirty": false
+        },
+        "packages": {
+          "numpy": "2.4.6",
+          "opencv-python-headless": null,
+          "opencv-python": "4.14.0.94",
+          "torch": "2.14.1+cu126",
+          "ultralytics": null
+        },
+        "adapter": {
+          "model_id": "detrpose",
+          "architecture": "DETRPose-N (COCO)",
+          "backend": "PyTorch",
+          "device": "cuda:0",
+          "gpu": {
+            "device": "cuda:0",
+            "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+            "gpu_name": "NVIDIA GeForce RTX 3090",
+            "memory_total_bytes": 25286672384
+          },
+          "precision": "float32",
+          "packages": {
+            "detrpose": "0.0.1",
+            "torch": "2.14.1+cu126",
+            "torchvision": "0.29.1+cu126",
+            "safetensors": "0.8.0",
+            "huggingface-hub": "2.4.0"
+          },
+          "upstream": {
+            "path": "/home/taku/he-pose-mtg/third_party/DETRPose",
+            "commit": "da12e0cd29864b1d3a289c562c34d423371a4157",
+            "patch_sha256": "20dbd6a0e13e4cd496cee5a7c7f90428848db376bcc07eece0f43091adef32eb"
+          },
+          "hf_revision": "8e11f255908c7869d9a257b2669a9012957b6d0a",
+          "weights": [
+            {
+              "path": "/home/taku/he-pose-mtg/models/detrpose/model.safetensors",
+              "sha256": "b618ccec659b42e92372290645c3c4712813571ecda914bf3ffa52d1173e20fc",
+              "size": 16677992,
+              "source": "https://huggingface.co/SebasJanampa/DETRPose_N_COCO/resolve/8e11f255908c7869d9a257b2669a9012957b6d0a/model.safetensors"
+            }
+          ],
+          "license": "Apache-2.0",
+          "input_size": [
+            640,
+            640
+          ],
+          "batch_size": 1,
+          "confidence_threshold": 0.5,
+          "bbox": "unavailable: null",
+          "joint_confidence": "unavailable: null",
+          "visibility": "unavailable: null",
+          "gpu_peak_memory_bytes": 68432896,
+          "memory_scope": "current process PyTorch allocator since adapter initialization",
+          "warmup": "none; all input frames retained; not comparative benchmark"
+        }
+      },
+      "summary": {
+        "schema_version": "1.0",
+        "run_id": "33292dcf78dc40d7a8267bcb66575aae",
+        "status": "success",
+        "started_at": "2026-11-04T10:19:55.560367+00:00",
+        "finished_at": "2026-11-04T10:20:01.266443+00:00",
+        "frame_counts": {
+          "success": 375,
+          "failed": 0,
+          "not_estimated": 0
+        },
+        "last_frame_index": 374,
+        "details": {
+          "model_load_ms": 97.422415,
+          "first_adapter_call_ms": 21.088835,
+          "source_frame_count": 375,
+          "declared_frame_count": 375,
+          "source_fps": 25.0,
+          "processing_ms": 5602.205136,
+          "processing_fps": 66.93792727978392,
+          "inference": {
+            "count": 375,
+            "mean_ms": 6.799106046040853,
+            "p50_ms": 6.779903888702393,
+            "p95_ms": 6.862745571136474
+          },
+          "total_before_summary_ms": 5706.254539,
+          "timing_scope": {
+            "processing": "decode, adapter, render, writes, output verification; no load",
+            "total_ms": "target read start to before result writes; includes window wait",
+            "inference_ms": "adapter-reported synchronized model time; null if unknown"
+          }
+        },
+        "error": null,
+        "artifacts": [
+          "annotated.mp4",
+          "environment.json",
+          "poses.jsonl",
+          "run.log",
+          "summary.json",
+          "timings.csv"
+        ]
+      }
+    },
+    {
+      "output": "outputs/yolo26-after-detrpose-gpu",
+      "report": {
+        "status": "success",
+        "device": "cuda:0",
+        "image_people": 4,
+        "video_frames": 3,
+        "summary_status": "success",
+        "internet_connection_attempts": [],
+        "input_kind": "official still image repeated; not recorded motion or benchmark",
+        "video_frames_with_people": 3,
+        "output": "outputs/yolo26-after-detrpose-gpu"
+      },
+      "environment": {
+        "model_id": "yolo26",
+        "requested_device": "cuda:0",
+        "device": "cuda:0",
+        "input": {
+          "path": "/home/taku/he-pose-mtg/outputs/yolo26-after-detrpose-gpu/repeated-image-input.mp4",
+          "sha256": "4cd4f62b77b463df6cc9c62e2aaa27f1e920c3aeb33f8df7ed16597053f36c5f"
+        },
+        "configuration": {
+          "python": "/home/taku/he-pose-mtg/.venv-yolo26/bin/python",
+          "weights": "/home/taku/he-pose-mtg/models/yolo26/yolo26n-pose.pt",
+          "device": "cuda:0",
+          "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+          "input_size": 640
+        },
+        "application_version": "0.1.0",
+        "python": "3.11.11",
+        "python_executable": "/home/taku/he-pose-mtg/.venv-yolo26/bin/python",
+        "platform": "Linux-5.15.0-1114-intel-iotg-x86_64-with-glibc2.35",
+        "source": {
+          "git_commit": "a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3",
+          "dirty": false
+        },
+        "packages": {
+          "numpy": "2.4.6",
+          "opencv-python-headless": null,
+          "opencv-python": "4.14.0.94",
+          "torch": "2.14.1+cu126",
+          "ultralytics": "8.4.202"
+        },
+        "adapter": {
+          "model_id": "yolo26",
+          "architecture": "YOLO26n-Pose",
+          "backend": "PyTorch",
+          "device": "cuda:0",
+          "gpu": {
+            "device": "cuda:0",
+            "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+            "gpu_name": "NVIDIA GeForce RTX 3090",
+            "memory_total_bytes": 25286672384
+          },
+          "precision": "float32",
+          "packages": {
+            "ultralytics": "8.4.202",
+            "torch": "2.14.1+cu126",
+            "torchvision": "0.29.1+cu126"
+          },
+          "upstream_commit": "ae725d5cb20c2d849b864cd34fc15f5c55f877a5",
+          "weights": [
+            {
+              "path": "/home/taku/he-pose-mtg/models/yolo26/yolo26n-pose.pt",
+              "sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+              "size": 7878574,
+              "source": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt"
+            }
+          ],
+          "input_size": [
+            640,
+            640
+          ],
+          "rect": false,
+          "nms": false,
+          "confidence_threshold": 0.25,
+          "keypoint_threshold": 0.5,
+          "license": "AGPL-3.0",
+          "gpu_peak_memory_bytes": 85066240,
+          "memory_scope": "current process PyTorch allocator since adapter initialization",
+          "warmup": "official first-predict internal warmup; no input frames discarded"
+        }
+      },
+      "summary": {
+        "schema_version": "1.0",
+        "run_id": "d9d37d0d647f4ce7b66a4d0cc35f5ab8",
+        "status": "success",
+        "started_at": "2026-11-04T10:20:46.976320+00:00",
+        "finished_at": "2026-11-04T10:20:47.149863+00:00",
+        "frame_counts": {
+          "success": 3,
+          "failed": 0,
+          "not_estimated": 0
+        },
+        "last_frame_index": 2,
+        "details": {
+          "model_load_ms": 57.026472,
+          "first_adapter_call_ms": 52.031756,
+          "source_frame_count": 3,
+          "declared_frame_count": 3,
+          "source_fps": 10.0,
+          "processing_ms": 111.990525,
+          "processing_fps": 26.787980501028994,
+          "inference": {
+            "count": 3,
+            "mean_ms": 3.2623733325939006,
+            "p50_ms": 3.298847994301468,
+            "p95_ms": 3.3491436042822897
+          },
+          "total_before_summary_ms": 173.724702,
+          "timing_scope": {
+            "processing": "decode, adapter, render, writes, output verification; no load",
+            "total_ms": "target read start to before result writes; includes window wait",
+            "inference_ms": "adapter-reported synchronized model time; null if unknown"
+          }
+        },
+        "error": null,
+        "artifacts": [
+          "annotated.mp4",
+          "environment.json",
+          "poses.jsonl",
+          "run.log",
+          "summary.json",
+          "timings.csv"
+        ]
+      }
+    }
+  ],
+  "unit_tests": {
+    "passed": 75,
+    "subtests_passed": 11,
+    "requires_models_or_gpu": false
+  },
+  "ci": "not run for DETRPose stage; push held pending repository visibility clarification",
+  "remaining": [
+    "TAR-ViTPose",
+    "Mac remote live",
+    "comparative benchmark",
+    "comparison video",
+    "three final sample videos",
+    "MTG guide",
+    "three-participant acceptance"
+  ]
+}

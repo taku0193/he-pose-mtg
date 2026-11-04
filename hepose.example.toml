@@ -12,9 +12,11 @@ input_size = 640
 
 [models.detrpose]
 python = ".venv-detrpose/bin/python"
-weights = "models/detrpose/detrpose-n.pth"
+weights = "models/detrpose/model.safetensors"
 repository = "third_party/DETRPose"
 device = "cuda:0"
+input_size = 640
+# gpu_uuid = "GPU-YOUR-ASSIGNED-UUID"
 
 [models.tar-vitpose]
 python = ".venv-tar/bin/python"

@@ -12,7 +12,7 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-04：確定仕様はv1.3。共通CLI・動画I/O・結果保存とYOLO26n-Poseを実装し、abertのGPU 0（RTX 3090）で公式画像と15秒・375フレームの運動動画を処理しました。必須6出力とフレーム対応を確認済みです。DETRPose-N、TAR-ViTPose、遠隔ライブ、ベンチマーク、比較動画、MTGガイドは未完了です。3人全員の実機受入確認も残っています。
+2026-11-04：確定仕様はv1.3。共通CLI・動画I/O・結果保存とYOLO26n-Pose／DETRPose-Nを実装し、abertのGPU 0（RTX 3090）で公式画像と同じ15秒・375フレームの運動動画を処理しました。必須6出力とフレーム対応を確認済みです。TAR-ViTPose、遠隔ライブ、ベンチマーク、比較動画、MTGガイドは未完了です。3人全員の実機受入確認も残っています。
 
 MTG資料はGoogleドキュメントのような章立ての文書とし、Markdown原稿を管理します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
 
@@ -67,7 +67,7 @@ hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPy
   --input assets/sample/jumping-jacks-validation.mp4 --output outputs/yolo26 --device cuda:0
 ```
 
-YOLO26のrunは実装済みです。doctor --model allは未実装のDETRPose／TARも確認するため、現段階では終了コード1です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
+YOLO26／DETRPoseのrunは実装済みです。doctor --model allは未実装のTARも確認するため、現段階では終了コード1です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
 
 ## YOLO26n-Poseの準備とGPU検証
 
@@ -92,13 +92,30 @@ python3 scripts/prepare_validation_video.py
 
 GPUスモークは画像の人物検出、動画の最後までの処理、元フレーム対応、出力動画の再復号を確認します。Pythonのインターネット接続呼出しも禁止・記録します。既定の30フレームは公式静止画の反復動画で、運動動画の検証には--videoを明示します。正解アノテーションがないため精度は未評価です。通常runの時間記録は残りますが、ウォームアップ20件＋本計測100件以上のモデル比較benchmarkは未実装です。
 
+## DETRPose-Nの準備とGPU検証
+
+```bash
+python3 scripts/prepare_detrpose.py
+# hepose.local.tomlにdetrpose節を設定してから実行
+.venv/bin/python -m hepose.cli doctor --model detrpose --device cuda:0 --json
+.venv/bin/python -m hepose.cli run --model detrpose \
+  --input assets/sample/jumping-jacks-validation.mp4 --output outputs/detrpose --device cuda:0
+# 公式画像APIとの座標照合と動画検証（通常pytestから分離）
+.venv-detrpose/bin/python integration_tests/detrpose_smoke.py \
+  --video assets/sample/jumping-jacks-validation.mp4 --output outputs/detrpose-motion-check
+```
+
+公式inference_onlyのコミット、Hugging Face上の重みの版・SHA256、Apache-2.0ライセンスは[モデル記録](docs/model-manifests/detrpose.json)に固定しています。専用環境の依存はenvironments/detrpose/uv.lockに記録します。公式配布のsafetensorsをローカルで厳密に読み込むため、読み込み箇所のみ[パッチ](patches/detrpose/local-safetensors.patch)を適用します。モデル計算・前処理・後処理は公式実装を使います。
+
+DETRPose-Nでは人物の矩形、関節confidence、visibilityが得られないため共通JSONはnullです。人物scoreで0.5を超えるものを採用し、そのscoreを関節confidenceへ転用しません。入力サイズは固定設定に合わせ640×640です。公式画像APIと共通アダプタの座標の一致、運動動画375/375フレームの出力を確認しました。詳細は[検証記録](docs/pr-notes/detrpose.md)にあります。
+
 ## 動画と結果の契約
 
 当初の動画入力は固定FPS、MP4出力の幅・高さは正の偶数を対象にします。奇数サイズを黙って切り落としません。読めない動画、不正なFPS、既知の総フレーム数に満たない復号終了、出力の復号検証失敗はエラーにします。可変FPSの正しい同期や、総フレーム数が不明な素材の全ての破損検出は保証しません。
 
 正常終了時の出力はannotated.mp4、poses.jsonl、timings.csv、summary.json、environment.json、run.logです。元動画のフレーム順・FPSを保ち、時間窓の境界もNOT ESTIMATED（未推定）として記録・描画します。推定可能なフレームが一つもない入力は成功にしません。出力先は新しいディレクトリを指定し、既存の結果を上書きしません。
 
-共通形式はschema_version=1.0。フレーム番号は0始まり、元時刻はframe_index/source_fps、時間の単位はmsです。関節は元画像上の名前付き座標で、対応しない点・不明な測定値はJSONでnull、CSVで空欄です。信頼度からvisibilityを推測しません。正常な0人検出・処理失敗・未推定を区別します。
+共通形式はschema_version=1.0。フレーム番号は0始まり、元時刻はframe_index/source_fps、時間の単位はmsです。関節は元画像上の名前付き座標で、対応しない点・取得できない矩形・不明な測定値はJSONでnull、CSVで空欄です。信頼度からvisibilityを推測しません。正常な0人検出・処理失敗・未推定を区別します。
 
 environment.jsonには入力SHA256、ソースのGitコミットと未コミット変更の有無、依存版、要求デバイスとアダプタが報告した実使用デバイスを分けて保存します。モデル時間が取れないときはnullとし、アダプタ全体のホスト時間で代用しません。処理全体の計測には動画・結果の書込みと出力動画の復号検証を含み、ロード時間は別記録です。
 

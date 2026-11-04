@@ -9,19 +9,21 @@
 | 項目 | 状態 |
 | --- | --- |
 | 作業先 | abert / taku / /home/taku/he-pose-mtg |
-| 共通基盤 | CLI、設定、動画I/O、描画、6出力。mainの97e31a2まで統合済み |
-| YOLO26n-Pose | feat/yolo26-poseで実装。公式画像・反復画像動画・実際の運動動画をGPU検証済み |
-| 最新の実動画検証ソース | 2753c066b14104bde1acd2f90d927e2307d4ca68、dirty=false |
-| 単体テスト | モデル不要63件＋11 subtests。ruff／CLI helpとLinux・macOS CIを確認 |
+| 共通基盤・モデル | YOLOとDETRの画像・動画工程をローカルmainへ統合。リモートmainは97e31a2で追加pushを保留中 |
+| YOLO26n-Pose | 公式画像・反復画像動画・実際の運動動画をGPU検証済み。DETR工程で共通GPU確認処理を分離した後もGPU回帰確認 |
+| DETRPose-N | feat/detrposeで画像・動画・共通CLIを実装し、公式画像APIとの座標一致と375フレーム動画をGPU検証済み |
+| 最新のDETR実動画検証ソース | a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false |
+| 単体テスト | モデル不要75件＋11 subtests。ruff／CLI helpも確認。DETR工程のGitHub CIは未実施（push保留） |
 | モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
 | 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
 | 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |
 | YOLOの動画結果 | outputs/yolo26-motion-gpu/video、375/375処理、358フレームで人物を検出 |
-| 残りのモデル | DETRPose-N／TAR-ViTPoseは未実装、依存環境・重み未準備 |
+| DETRの環境・結果 | .venv-detrpose、models/detrpose/model.safetensors、third_party/DETRPose、outputs/detrpose-motion-gpu/video |
+| 残りのモデル | TAR-ViTPoseは未実装、依存環境・重み未準備 |
 | 未完了の必須機能 | Mac遠隔ライブ、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
 | GitHub公開範囲 | 仕様は非公開。2026-11-04のAPIはpublicを返したためユーザーへ確認中。回答前に公開範囲を変更しない |
 
-YOLOの実動作・TDD・制限はdocs/pr-notes/yolo26-pose.md、機械可読の証拠はdocs/experiments/yolo26-2026-11-04.jsonに記録する。これはYOLOの画像・動画工程の検証であり、全プロジェクトの完了ではない。
+各モデルの実動作・TDD・制限はdocs/pr-notes/yolo26-pose.mdとdetrpose.md、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの矩形・関節confidence・visibilityは得られずnullとして保存する。公式safetensorsをローカルで読むパッチだけを加え、重み・上流・パッチのハッシュを照合する。
 
 ## GPUと実行経路
 
@@ -38,7 +40,7 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 ## 再開時の確認
 
 1. AGENTS.md、本書、確定仕様、Git状態を読み、未コミット変更と既存の結果を保護する。
-2. mainとfeat/yolo26-poseの統合状態、最新CIを確認する。mainへ直接実装しない。
+2. ローカルmainとfeat/detrpose、リモートとの差、最新CIを確認する。mainへ直接実装しない。push保留を勝手に解除しない。
 3. hepose.local.tomlと準備済み環境を確認する。既存の設定を例で上書きしない。
 4. GPU工程は許可済みのGPU 0で行う。利用不可なら理由を記録し、別GPUやCPUへ自動切替しない。
 5. 小さな機能単位でRed→Greenを実行し、work/tddとdocs/pr-notesへ記録する。単体試験はモデル・重み・GPU・ネットワークなしで実行する。
@@ -49,7 +51,6 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 
 | ブランチ | 内容 |
 | --- | --- |
-| feat/detrpose | 公式inference_onlyのNモデル、画像→動画→共通CLI、実GPU動画検証 |
 | feat/tar-vitpose | 公式再現、設定整合と明示パッチ、関節・座標・時間窓、動画検証 |
 | feat/remote-live | Macカメラ、SSHトンネル、Linuxワーカー、同一フレームへの返送・描画、切断・終了 |
 | feat/benchmark | 同一GPU・同一素材で順次測定、比較動画、表・レポート |
