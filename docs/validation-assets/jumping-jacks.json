@@ -1,0 +1,36 @@
+{
+  "title": "Jumping jacks and burpees",
+  "author": "Taco fleur",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Jumping_jacks_and_burpees.webm",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Jumping_jacks_and_burpees.webm",
+    "sha256": "1c8370a29c52b5b1538f03f8c63be6cdc9333dea3cbd77cc8f2af0dbe496d5b4",
+    "size": 6544177,
+    "path": "work/validation-video/jumping-jacks.webm",
+    "commons_sha1": "de0408ee2f90afba376f23d86f48d6c98d4eb42b"
+  },
+  "derived": {
+    "path": "assets/sample/jumping-jacks-validation.mp4",
+    "sha256": "67d48a46e86fe66e8d096761f0c23098097855b2d04a94a8d88bf14d00d16642",
+    "changes": "first 15 seconds; CFR 25 fps; H.264 MP4; audio removed",
+    "probe": {
+      "programs": [],
+      "streams": [
+        {
+          "width": 640,
+          "height": 480,
+          "r_frame_rate": "25/1",
+          "avg_frame_rate": "25/1",
+          "duration": "15.000000",
+          "nb_frames": "375"
+        }
+      ]
+    }
+  },
+  "attribution": "Jumping jacks and burpees — Taco fleur — CC BY-SA 4.0",
+  "pose_output_changes": "pose skeleton and frame labels added",
+  "derived_video_license": "CC BY-SA 4.0",
+  "purpose": "recorded motion validation; not the final three MTG sample set or a benchmark"
+}

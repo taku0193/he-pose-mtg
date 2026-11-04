@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--config", type=Path, default=ROOT / "hepose.local.toml")
     parser.add_argument("--image", type=Path, default=ROOT / "work/yolo26-smoke/bus.jpg")
     parser.add_argument("--frames", type=int, default=30)
+    parser.add_argument("--video", type=Path, help="既存の実動画を最後まで処理する")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.frames < 1:
@@ -64,10 +65,18 @@ def main():
         )
         adapter.close()
         adapter = None
-        video = output / "repeated-image-input.mp4"
-        with VideoWriter(video, 10, (width, height)) as writer:
-            for _ in range(args.frames):
-                writer.write(image)
+        if args.video:
+            video = args.video.resolve()
+            with VideoReader(video) as source:
+                expected_frames = sum(1 for _ in source)
+            input_kind = "recorded motion validation video; not a benchmark"
+        else:
+            video = output / "repeated-image-input.mp4"
+            with VideoWriter(video, 10, (width, height)) as writer:
+                for _ in range(args.frames):
+                    writer.write(image)
+            expected_frames = args.frames
+            input_kind = "official still image repeated; not recorded motion or benchmark"
         run_output = output / "video"
         exit_code = cli_main(
             [
@@ -90,8 +99,8 @@ def main():
         summary = json.loads((run_output / "summary.json").read_text())
         rows = [json.loads(line) for line in (run_output / "poses.jsonl").read_text().splitlines()]
         with VideoReader(run_output / "annotated.mp4") as reader:
-            decoded = len(list(reader))
-        if decoded != args.frames or len(rows) != args.frames:
+            decoded = sum(1 for _ in reader)
+        if decoded != expected_frames or len(rows) != expected_frames:
             raise AssertionError("input/output frame counts do not match")
         if any(row["frame_index"] != index for index, row in enumerate(rows)):
             raise AssertionError("source frame identities do not match")
@@ -104,7 +113,8 @@ def main():
             "video_frames": decoded,
             "summary_status": summary["status"],
             "internet_connection_attempts": attempted_network,
-            "input_kind": "official still image repeated; not recorded motion or benchmark",
+            "input_kind": input_kind,
+            "video_frames_with_people": sum(bool(row["people"]) for row in rows),
             "output": str(output),
         }
         (output / "smoke-report.json").write_text(json.dumps(report, indent=2) + "\n")
