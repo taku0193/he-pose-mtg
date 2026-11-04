@@ -9,11 +9,11 @@
 | 項目 | 状態 |
 | --- | --- |
 | 作業先 | abert / taku / /home/taku/he-pose-mtg |
-| 共通基盤・モデル | YOLOとDETRの画像・動画工程をローカルmainへ統合。公開管理の許可を受け、リモートへの同期を進める |
+| 共通基盤・モデル | YOLOとDETRの画像・動画工程と仕様v1.4を公開GitHubのmainへpush済み。公開方針反映commitは6cc9ff0 |
 | YOLO26n-Pose | 公式画像・反復画像動画・実際の運動動画をGPU検証済み。DETR工程で共通GPU確認処理を分離した後もGPU回帰確認 |
 | DETRPose-N | feat/detrposeで画像・動画・共通CLIを実装し、公式画像APIとの座標一致と375フレーム動画をGPU検証済み |
 | 最新のDETR実動画検証ソース | a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false |
-| 単体テスト | モデル不要75件＋11 subtests。ruff／CLI helpも確認。DETR工程のGitHub CIはpush後に確認する |
+| 単体テスト | モデル不要75件＋11 subtests。ruff／CLI helpも確認。push後の照会時点では6cc9ff0のCI実行記録なし。成功と扱わず、最新状況をActionsで確認する |
 | モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
 | 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
 | 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |

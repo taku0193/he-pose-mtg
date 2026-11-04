@@ -10,7 +10,7 @@ GitHubリポジトリは https://github.com/taku0193/he-pose-mtg です。2026-1
 
 最初に現在の作業ディレクトリとGit状態を確認してください。空の作業ディレクトリならリポジトリをcloneし、既存のファイルや別リポジトリを上書きしないでください。既にclone済みならそのリポジトリを使ってください。
 
-`AGENTS.md`、`HANDOFF.md`、`docs/implementation-spec.md`を読んでください。確定仕様はv1.4です。共通CLI・結果保存とYOLO26n-Pose／DETRPose-Nを実装し、モデル不要のテスト75件＋11 subtestsとruffを確認しています。abertのRTX 3090で両モデルの画像と同じ15秒・375フレームの運動動画を実際に処理しました。依存版はuv.lockとenvironments/のモデル別uv.lock、証拠・制限はdocs/pr-notes/を参照してください。DETR工程のCIはpush後に確認し、記録します。TAR・遠隔ライブ・測定比較・最終素材と資料・3人分の受入は未完了です。
+`AGENTS.md`、`HANDOFF.md`、`docs/implementation-spec.md`を読んでください。確定仕様はv1.4です。共通CLI・結果保存とYOLO26n-Pose／DETRPose-Nを実装し、モデル不要のテスト75件＋11 subtestsとruffを確認しています。abertのRTX 3090で両モデルの画像と同じ15秒・375フレームの運動動画を実際に処理しました。依存版はuv.lockとenvironments/のモデル別uv.lock、証拠・制限はdocs/pr-notes/を参照してください。公開GitHubへのpushは再開済み。CI照会の記録はdocs/pr-notes/public-repository.mdを読み、最新状況をActionsで確認してください。TAR・遠隔ライブ・測定比較・最終素材と資料・3人分の受入は未完了です。
 
 実行構成は、各人のMacからSSHでLinuxへ接続し、各人専用のRTX 3090を1台使う形です。全員がYOLO26n-PoseとDETRPose-Nを実行し、TAR-ViTPoseは動作可能な代表環境で実演します。YOLO26のライブは、Macのカメラ映像をLinuxへ送り、GPU推論した結果をMacへ返して描画・表示します。
 
