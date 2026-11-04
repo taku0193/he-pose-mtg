@@ -104,3 +104,17 @@ def test_requested_gpu_uuid_must_match():
 def test_explicit_cpu_is_recorded_without_gpu_claims():
     info = validate_runtime_device("cpu", SimpleNamespace())
     assert info["device"] == "cpu" and info["gpu_uuid"] is None
+
+
+def test_pytorch_uuid_without_nvidia_prefix_matches_the_assigned_gpu():
+    uuid = "25e750aa-24f4-8a0d-edb2-f2f948526eec"
+    properties = SimpleNamespace(name="RTX 3090", uuid=uuid, total_memory=24576 * 1024**2)
+    runtime = SimpleNamespace(
+        cuda=SimpleNamespace(
+            is_available=lambda: True,
+            device_count=lambda: 1,
+            get_device_properties=lambda index: properties,
+        )
+    )
+    info = validate_runtime_device("cuda:0", runtime, "GPU-" + uuid)
+    assert info["gpu_uuid"] == "GPU-" + uuid

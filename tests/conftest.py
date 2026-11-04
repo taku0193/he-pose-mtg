@@ -5,6 +5,12 @@ import numpy as np
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def isolate_local_configuration(tmp_path, monkeypatch):
+    """Never let a developer's local model settings activate real models in unit tests."""
+    monkeypatch.chdir(tmp_path)
+
+
 @pytest.fixture
 def sample_video(tmp_path):
     path = tmp_path / "input.mp4"

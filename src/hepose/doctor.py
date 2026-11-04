@@ -37,7 +37,9 @@ def gui_check() -> dict:
         return {"status": "missing", "detail": str(exc)}
 
 
-def inspect(role: str, model: str = "all", device: str = "cuda:0") -> dict:
+def inspect(
+    role: str, model: str = "all", device: str = "cuda:0", settings: dict | None = None
+) -> dict:
     checks = {"python": {"status": "ok", "detail": sys.version.split()[0]}}
     checks["opencv"] = module_check("cv2")
     result = {
@@ -63,6 +65,10 @@ def inspect(role: str, model: str = "all", device: str = "cuda:0") -> dict:
             name: {"status": "not_implemented", "detail": "モデルアダプタは未実装"}
             for name in selected
         }
+        if "yolo26" in selected:
+            from hepose.yolo26 import inspect_yolo26
+
+            result["models"]["yolo26"] = inspect_yolo26(settings or {}, device)
         checks["torch"] = module_check("torch")
         if device.startswith("cuda:"):
             try:
@@ -79,9 +85,12 @@ def inspect(role: str, model: str = "all", device: str = "cuda:0") -> dict:
                 }
             except (OSError, subprocess.TimeoutExpired) as exc:
                 checks["cuda"] = {"status": "unavailable", "detail": str(exc)}
-    result["ready"] = role == "client" and all(
-        item["status"] in {"ok", "available_unverified"} for item in checks.values()
-    )
+    if role == "client":
+        result["ready"] = all(
+            item["status"] in {"ok", "available_unverified"} for item in checks.values()
+        )
+    else:
+        result["ready"] = all(item["status"] == "ready" for item in result["models"].values())
     return result
 
 
@@ -97,15 +106,12 @@ def inspect_environments(model: str, device: str | None, configuration: Configur
         "models": {},
         "ready": False,
     }
-    local_cache = {}
     for name in selected:
         settings = configuration.model(name)
         selected_device = device or settings.get("device", "cuda:0")
         python = settings.get("python", sys.executable)
         if os.path.abspath(python) == os.path.abspath(sys.executable):
-            if selected_device not in local_cache:
-                local_cache[selected_device] = inspect("worker", "all", selected_device)
-            payload = local_cache[selected_device]
+            payload = inspect("worker", name, selected_device, settings)
         else:
             command = [
                 python,
@@ -147,4 +153,5 @@ def inspect_environments(model: str, device: str | None, configuration: Configur
             "status": "present" if weights and Path(weights).is_file() else "missing",
         }
         result["models"][name] = item
+    result["ready"] = all(item["status"] == "ready" for item in result["models"].values())
     return result

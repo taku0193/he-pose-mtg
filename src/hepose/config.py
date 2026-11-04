@@ -47,7 +47,12 @@ def load_config(path: Path | None = None) -> Configuration:
     resolved = {}
     path_fields = {"python", "weights", "repository", "config"}
     for name, model in models.items():
-        if not isinstance(model, dict) or model.keys() - {*path_fields, "device", "gpu_uuid"}:
+        if not isinstance(model, dict) or model.keys() - {
+            *path_fields,
+            "device",
+            "gpu_uuid",
+            "input_size",
+        }:
             raise ValueError(f"invalid model configuration: {name}")
         item = dict(model)
         for key in path_fields & item.keys():
@@ -62,6 +67,10 @@ def load_config(path: Path | None = None) -> Configuration:
                 else str((path.parent / value).resolve())
             )
         validate_device(item.get("device", "cuda:0"))
+        if "input_size" in item:
+            size = item["input_size"]
+            if isinstance(size, bool) or not isinstance(size, int) or size < 32 or size % 32:
+                raise ValueError("input_size must be a positive multiple of 32")
         if "gpu_uuid" in item and not isinstance(item["gpu_uuid"], str):
             raise ValueError("gpu_uuid must be a string")
         resolved[name] = item

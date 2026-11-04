@@ -67,7 +67,7 @@ def test_run_failure_writes_summary_without_model_download(sample_video, tmp_pat
         main(["run", "--model", "yolo26", "--input", str(sample_video), "--output", str(output)])
         == 1
     )
-    assert "未実装" in capsys.readouterr().err
+    assert "重み" in capsys.readouterr().err
     assert json.loads((output / "summary.json").read_text())["status"] == "failed"
     assert not (output / "annotated.mp4").exists()
 

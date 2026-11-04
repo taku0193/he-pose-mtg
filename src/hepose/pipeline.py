@@ -51,6 +51,13 @@ def run_video(
             environment["adapter"] = adapter.environment()
             environment["device"] = environment["adapter"].get("device")
             write_json(output / "environment.json", environment)
+
+            def save_adapter_state():
+                environment["adapter"] = adapter.environment()
+                environment["device"] = environment["adapter"].get("device")
+                write_json(output / "environment.json", environment)
+
+            resources.callback(save_adapter_state)
             reader = resources.enter_context(VideoReader(input_path))
             writer = resources.enter_context(
                 VideoWriter(output / "annotated.mp4", reader.fps, (reader.width, reader.height))

@@ -94,7 +94,9 @@ def execute(args) -> int:
         validate_device(explicit_device)
     if args.command == "doctor":
         if args.role == "client" or args.local:
-            result = inspect(args.role, args.model, args.device or "cuda:0")
+            result = inspect(
+                args.role, args.model, args.device or "cuda:0", configuration.model(args.model)
+            )
         else:
             result = inspect_environments(args.model, args.device, configuration)
         if args.json:

@@ -1,0 +1,27 @@
+{
+  "model_id": "yolo26",
+  "architecture": "YOLO26n-Pose",
+  "ultralytics_version": "8.4.202",
+  "upstream_commit": "ae725d5cb20c2d849b864cd34fc15f5c55f877a5",
+  "upstream_url": "https://github.com/ultralytics/ultralytics/tree/ae725d5cb20c2d849b864cd34fc15f5c55f877a5",
+  "license": "AGPL-3.0",
+  "license_url": "https://github.com/ultralytics/ultralytics/blob/ae725d5cb20c2d849b864cd34fc15f5c55f877a5/LICENSE",
+  "weights": {
+    "filename": "yolo26n-pose.pt",
+    "release": "v8.4.0",
+    "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt",
+    "expected_sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+    "expected_size_bytes": 7878574
+  },
+  "reference_environment": {
+    "python": "3.11",
+    "torch": "2.14.1+cu126",
+    "torchvision": "0.29.1+cu126",
+    "input_size": [640, 640],
+    "precision": "float32",
+    "batch_size": 1,
+    "nms": false,
+    "keypoint_threshold": 0.5
+  },
+  "upstream_patches": []
+}

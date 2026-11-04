@@ -50,4 +50,8 @@ class PoseAdapter(Protocol):
 
 def load_adapter(model_id: str, device: str, model_config: dict | None = None) -> PoseAdapter:
     """Model branches will add lazy, local-weight-only implementations here."""
+    if model_id == "yolo26":
+        from hepose.yolo26 import Yolo26Adapter
+
+        return Yolo26Adapter(device, model_config or {})
     raise NotImplementedError(f"{model_id}: モデルアダプタは未実装です。")

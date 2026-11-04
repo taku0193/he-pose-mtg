@@ -1,0 +1,22 @@
+[project]
+name = "hepose-yolo26-runtime"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "he-pose-mtg",
+    "ultralytics==8.4.202",
+    "torch==2.14.1+cu126",
+    "torchvision==0.29.1+cu126",
+    "numpy==2.4.6",
+    "opencv-python==4.14.0.94",
+]
+
+[tool.uv.sources]
+he-pose-mtg = { path = "../..", editable = true }
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true

@@ -24,8 +24,8 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --python 3.11 --extra video --extra dev
       - run: .venv/bin/python -m pytest -q
-      - run: .venv/bin/ruff check src tests
-      - run: .venv/bin/ruff format --diff src tests
+      - run: .venv/bin/ruff check src tests scripts integration_tests
+      - run: .venv/bin/ruff format --check src tests scripts integration_tests
       - name: CLI help without model dependencies
         shell: bash
         run: |

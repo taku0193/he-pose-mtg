@@ -48,9 +48,9 @@ class CliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         data = json.loads(result.stdout)
         self.assertEqual(set(data["models"]), {"yolo26", "detrpose", "tar-vitpose"})
-        self.assertTrue(
-            all(item["status"] == "not_implemented" for item in data["models"].values())
-        )
+        self.assertEqual(data["models"]["yolo26"]["status"], "weights_missing")
+        self.assertEqual(data["models"]["detrpose"]["status"], "not_implemented")
+        self.assertEqual(data["models"]["tar-vitpose"]["status"], "not_implemented")
 
     def test_unimplemented_run_is_not_reported_as_inference_success(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -69,7 +69,7 @@ class CliTests(unittest.TestCase):
                 "cuda:0",
             )
             self.assertEqual(result.returncode, 1)
-            self.assertIn("未実装", result.stderr)
+            self.assertIn("重み", result.stderr)
             self.assertFalse((output / "annotated.mp4").exists())
 
 
