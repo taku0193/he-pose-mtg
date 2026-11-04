@@ -100,12 +100,32 @@ def decode_person(heatmaps, crop_xyxy, detector_bbox) -> Person:
         native.append(Keypoint(name, float(x), float(y)))
     points = tuple(native)
     return Person(
-        tuple(detector_bbox),
+        tuple(float(value) for value in detector_bbox),
         coco17(points),
         native_keypoints=points,
         native_joint_definition="posetrack17_17slots",
         crop_xyxy=tuple(crop_xyxy),
     )
+
+
+def person_crop(bbox, image_width, image_height):
+    """Preserve the official NumPy 1.26 float32 bbox arithmetic before integer cropping."""
+    import numpy as np
+
+    x1, y1, x2, y2 = np.asarray(bbox, dtype=np.float32)
+    for value in (x1, y1, x2, y2):
+        finite(float(value), "detector bbox")
+    cx, cy = float(x1 + x2) / 2, float(y1 + y2) / 2
+    width, height = float(x2 - x1) * 1.25, float(y2 - y1) * 1.25
+    crop = (
+        int(max(cx - width / 2, 0)),
+        int(max(cy - height / 2, 0)),
+        int(min(cx + width / 2, image_width)),
+        int(min(cy + height / 2, image_height)),
+    )
+    if crop[2] <= crop[0] or crop[3] <= crop[1]:
+        raise ValueError("TARの人物クロップが空です。")
+    return crop
 
 
 def validate_window(frames, target_frame_index):
@@ -292,7 +312,6 @@ class TarVitposeAdapter:
             self._detector = importlib.import_module("ultralytics").YOLO(
                 settings["detector_weights"], task="detect"
             )
-            self._detector.to(self.runtime.device(device))
             if device.startswith("cuda:"):
                 self.runtime.cuda.synchronize(self.runtime.device(device))
         except BaseException:
@@ -320,21 +339,9 @@ class TarVitposeAdapter:
             raise ValueError("TAR人物検出の元画像サイズが一致しません。")
         self._detector_times.append((detections[0].speed or {}).get("inference"))
         people, model_times = [], []
-        boxes = detections[0].boxes.xyxy.detach().cpu().tolist()
+        boxes = detections[0].boxes.xyxy.detach().cpu().numpy()
         for bbox in boxes:
-            x1, y1, x2, y2 = bbox
-            for value in bbox:
-                finite(value, "detector bbox")
-            cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
-            width, height = (x2 - x1) * 1.25, (y2 - y1) * 1.25
-            crop = (
-                int(max(cx - width / 2, 0)),
-                int(max(cy - height / 2, 0)),
-                int(min(cx + width / 2, center.width)),
-                int(min(cy + height / 2, center.height)),
-            )
-            if crop[2] <= crop[0] or crop[3] <= crop[1]:
-                raise ValueError("TARの人物クロップが空です。")
+            crop = person_crop(bbox, center.width, center.height)
             images = [
                 self._upstream.preprocess_frame(
                     frame.image[crop[1] : crop[3], crop[0] : crop[2]], (288, 384)
@@ -342,7 +349,7 @@ class TarVitposeAdapter:
                 for frame in frames
             ]
             data = self.runtime.stack(images).unsqueeze(0).to(self.device)
-            with self.runtime.inference_mode():
+            with self.runtime.no_grad():
                 if self.device.startswith("cuda:"):
                     stream = self.runtime.cuda.current_stream(self.runtime.device(self.device))
                     start, end = (
@@ -412,7 +419,12 @@ class TarVitposeAdapter:
                 "architecture": "YOLO11x",
                 "input_size": 640,
                 "rect": True,
-                "precision": "float32",
+                "precision": str(next(self._detector.model.parameters()).dtype).removeprefix(
+                    "torch."
+                ),
+                "initialization": (
+                    "official CPU fusion then assigned-device transfer at first predict"
+                ),
                 "confidence": 0.25,
                 "iou": 0.7,
                 "license": "AGPL-3.0",

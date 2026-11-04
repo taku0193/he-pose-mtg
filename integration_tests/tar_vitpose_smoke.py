@@ -60,7 +60,7 @@ def window_check(adapter, frames, output):
         .unsqueeze(0)
         .to(adapter.device)
     )
-    with adapter.runtime.inference_mode():
+    with adapter.runtime.no_grad():
         heatmaps = adapter._model(data)
     original = adapter._upstream.extract_kps(heatmaps, y2 - y1, x2 - x1)
     expected = original + np.array([x1, y1])
@@ -149,6 +149,41 @@ def run_official(args, settings):
     }
     (args.output / "smoke-report.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
+
+
+def compare_official(output, rows):
+    raw = json.loads((output / "upstream/official-predictions.json").read_text())
+    groups = {}
+    for annotation in raw["annotations"]:
+        groups.setdefault(annotation["image_id"], []).append(annotation)
+    maximum, people, points = 0.0, 0, 0
+    for output_index in range(len(raw["images"])):
+        predictions = rows[output_index + 2]["people"]
+        annotations = groups.get(output_index, [])
+        if len(predictions) != len(annotations):
+            raise AssertionError("common and official person counts differ")
+        for person, annotation in zip(predictions, annotations, strict=True):
+            people += 1
+            x, y, width, height = annotation["bbox"]
+            if person["crop_xyxy"] != [x, y, x + width, y + height]:
+                raise AssertionError(f"official crop differs at source frame {output_index + 2}")
+            for index in USED_JOINTS:
+                point = person["native_keypoints"][index]
+                maximum = max(
+                    maximum,
+                    abs(point["x"] - annotation["keypoints"][index * 3] - x),
+                    abs(point["y"] - annotation["keypoints"][index * 3 + 1] - y),
+                )
+                points += 1
+    if maximum > 0.001:
+        raise AssertionError(f"official joint coordinates differ by {maximum} px")
+    return {
+        "center_frames": len(raw["images"]),
+        "people": people,
+        "points": points,
+        "max_abs_coordinate_error_px": maximum,
+        "tolerance_px": 0.001,
+    }
 
 
 def main():
@@ -245,6 +280,7 @@ def main():
     subprocess.run(
         command, cwd=ROOT, env=dict(os.environ, CUDA_VISIBLE_DEVICES=gpu_uuid), check=True
     )
+    full_parity = compare_official(args.output, rows)
     report = {
         "status": "success",
         "input_kind": "recorded motion; not comparative benchmark",
@@ -258,6 +294,7 @@ def main():
         "frames_with_people": sum(bool(row["people"]) for row in rows),
         "internet_connection_attempts": attempts,
         "official_cli": "upstream/smoke-report.json",
+        "full_official_parity": full_parity,
     }
     (args.output / "smoke-report.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))

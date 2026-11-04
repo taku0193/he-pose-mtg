@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from hepose.adapters import InputFrame
-from hepose.tar_vitpose import decode_person, validate_window
+from hepose.tar_vitpose import decode_person, person_crop, validate_window
 
 
 def test_tar_preserves_head_semantics_and_restores_crop_coordinates():
@@ -21,6 +21,11 @@ def test_tar_preserves_head_semantics_and_restores_crop_coordinates():
     assert person.crop_xyxy == (10, 20, 70, 100)
     assert person.bbox == (20, 30, 60, 90)
     assert all(p.confidence is None and p.visibility is None for p in person.native_keypoints)
+
+
+def test_tar_crop_preserves_official_float32_rounding_at_integer_boundary():
+    bbox = [171.6086883544922, 20, 256.47821044921875, 100]
+    assert person_crop(bbox, 640, 480) == (161, 10, 267, 110)
 
 
 @pytest.mark.parametrize("shape", [(17, 4, 3), (1, 15, 4, 3), (2, 17, 4, 3), (1, 17, 0, 3)])
