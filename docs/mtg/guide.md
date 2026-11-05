@@ -64,31 +64,44 @@ Linuxの各割当GPU、GPU UUID、既存のSSH接続先、両端のコミット�
 
 ## 4. 実演台本
 
-### 0–20分　今日の比較を揃える
+参加者は **Macでライブを試す → SSHでLinuxに入って録画を処理する → Macに戻って比較動画を開く** の順で進みます。事前に第3節の準備を済ませておきます。最後に、進行役が保存済みのTARの結果を見せます。
 
-進行役は上の構成図を指し、「手を上げた動きが画面に返るまで、どこで時間がかかるか」と尋ねます。各人が推論時間・処理FPS・ライブ表示遅延のうち1つを説明します。比較画面のフレーム番号と時刻の読み方を確認します。
+### 0–20分　見るポイントを決める
 
-### 20–40分　全員でMacライブを動かす
+進行役は「腕を上げてから、骨格が画面に出るまでのどこに時間がかかるか」と尋ねます。第2節の表を使い、モデルの計算時間、録画を処理する速さ、Macの画面に返るまでの時間を確認します。
 
-Macのリポジトリ直下で実行します。下の2変数は各自の設定で置き換えます。
+### 20–40分　Macでカメラの骨格表示を試す
+
+**Macのターミナル**で、Mac側のリポジトリへ移動します。ホームに置いた場合は `cd ~/he-pose-mtg` です。次の `taku@abert` と `/home/taku/he-pose-mtg` はabertを使う場合の例です。Macから接続できるSSH名と、Linux側のリポジトリの場所に置き換えてください。
 
 ```bash
-ssh_alias=YOUR_SSH_ALIAS
-remote_root=/absolute/path/to/he-pose-mtg
-.venv/bin/python -m hepose.cli doctor --role client
-ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true
+ssh_alias=taku@abert
+remote_root=/home/taku/he-pose-mtg
+.venv/bin/python -m hepose.cli doctor --role client &&
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true &&
 .venv/bin/python -m hepose.cli live --model yolo26 --camera 0 \
   --remote "$ssh_alias" --remote-root "$remote_root" --show-fps
 ```
 
-カメラに正面を向け、ゆっくり腕を上げた後、同じ動きを速く繰り返します。表示の更新、腕の追従、待機画像の置換を観察します。`q` で閉じてログの出力先を控え、事前確認では別のセッションで Ctrl+C も試し、受入記録にそれぞれの結果を残します。既定の出力は統計とログです。
+`live` がSSH接続を開き、Linuxで推論します。Macにカメラ画面が出たら、腕をゆっくり上げ、次に同じ動きを速く繰り返します。骨格が腕についてくるかを見て、画面で `q` を押します。Macのターミナルに戻ったら、表示されたログの出力先を控えます。Ctrl+Cなどの事前確認は別のセッションで行います。 [受入記録](acceptance.md)
 
-### 40–60分　録画の同じ元フレームを比較する
+### 40–60分　録画を処理し、Macで比較動画を開く
 
-次はLinux側のリポジトリ直下で実行します。`hepose.local.toml` の各モデルに割当GPUの `device` と `gpu_uuid` を設定します。両モデルの計測が成功すると、比較動画を作って出力先を表示します。
+#### 1. MacからLinuxに入る
+
+ライブを閉じたあと、**同じMacのターミナル**で次を実行します。端末の入力先がLinuxに切り替わります。
 
 ```bash
-root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)"
+ssh "$ssh_alias"
+```
+
+#### 2. LinuxでYOLO26とDETRPoseを順に実行する
+
+**SSHで入った先のLinux**で実行します。`cd` のパスは、Macで `remote_root` に設定した値を使います。GPUは事前に `hepose.local.toml` に記入した各モデルの `device` と `gpu_uuid` で選びます。
+
+```bash
+cd /home/taku/he-pose-mtg &&
+root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)" &&
 .venv/bin/python -m hepose.cli benchmark --models yolo26,detrpose \
   --input assets/sample/basic.mp4 --output "$root" &&
 .venv/bin/python -m hepose.cli compare --input-dir "$root" \
@@ -96,32 +109,39 @@ root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)"
 printf '%s\n' "$root"
 ```
 
-計測や比較が失敗した場合は、端末のエラーを確認します。計測の詳細はLinux側の出力先にある `summary.json` と `run.log` に残ります。成功したらMac側で、最後に表示された出力先をコピーします。`remote_run` には `outputs/...` から始まるパスを入れます。
+成功すると最後に `outputs/mtg-basic-20261105-175336` のような行が出ます。**自分の実行で表示されたフォルダ名**を控え、`exit` と入力してMacのターミナルに戻ります。途中でエラーが出たら、端末の表示と、出力先に作られた `summary.json`・`run.log` を確認します。
+
+#### 3. Macへコピーして再生する
+
+**Macに戻った同じターミナル**で、`run_name` の値を先ほど控えたフォルダ名に置き換えます。先頭の `outputs/` を除いた `mtg-basic-...` の部分を使います。
 
 ```bash
-remote_run=outputs/mtg-basic-YYYYMMDD-HHMMSS
-scp -r "$ssh_alias:$remote_root/$remote_run" .
-open "${remote_run##*/}/comparison.mp4"
+run_name=mtg-basic-YYYYMMDD-HHMMSS
+scp -r "$ssh_alias:$remote_root/outputs/$run_name" . &&
+open "$run_name/comparison.mp4"
 ```
 
-腕が前へ伸びる場面を一時停止し、元フレーム番号・モデル・関節名・見え方を記録します。各モデルの `summary.json` と必須6ファイルの存在も確認します。コマンド一覧は別紙にまとめています。 [当日のコマンド表](commands.md)
+腕が前へ伸びるところで動画を止め、左右のパネルに表示された同じ元フレーム番号で、肩・肘・手首を見比べます。コピーしたフォルダには比較動画と計測表、両モデルの実行記録が入っています。 [当日のコマンド表](commands.md)
 
-### 60–75分　代表環境でTARを説明する
+### 60–75分　進行役がTARの録画結果を見せる
 
-保存済みの `multi` の3モデル比較を開きます。まずTARの冒頭2フレームの **NOT ESTIMATED** を示し、中心フレーム2が0〜4を参照することを `poses.jsonl` で確認します。次に5.40秒（元フレーム135）で一時停止します。abertの保存結果ではYOLO26とDETRPoseが各1人、TARは2人を出力しました。6.00秒（フレーム150）では各2人、2人、3人でした。画面奥にも人が映っているので、人数に加えてどの位置の骨格かを見ます。
+配布セットの `results/multi/comparison.mp4` をMacで開きます。左からYOLO26、DETRPose、TARです。
 
-代表環境でその場でも実行するときは、Linuxのリポジトリ直下で次を使います。GPUはTARのローカル設定に従います。保存済み結果を見る場合は、配布セットの `results/multi/tar-poses.jsonl` でも参照窓を確認できます。
+1. 冒頭のTARパネルで `NOT ESTIMATED` を見ます。TARは前後2枚を必要とするので、最初に推定できる元フレームは2です。このフレームは0〜4を参照します。対応は `results/multi/tar-poses.jsonl` に記録されています。
+2. 二人が重なる5.40秒（元フレーム135）と、その後の6.00秒（フレーム150）で止めます。保存結果の検出人数は、左から順に **1・1・2人** と **2・2・3人** です。画面奥の人も映っているので、人数に加えて骨格がどこに出たかを見ます。
+
+`NO PERSON` は推定した結果が0人、`NOT ESTIMATED` は推定していないフレームです。`FAILED` や `NO SAVED RESULT` が出た場合は、失敗や保存結果の欠落として記録します。
+
+進行役が準備済みのLinux環境でも再実行する場合は、リポジトリ直下で次を使います。
 
 ```bash
 .venv/bin/python -m hepose.cli run --model tar-vitpose \
   --input assets/sample/multi.mp4 --output "outputs/tar-mtg-$(date +%Y%m%d-%H%M%S)"
 ```
 
-画面の **NO PERSON** は処理した結果が0人、**NOT ESTIMATED** は時間窓の境界などで推定を行えなかった状態です。**FAILED** と **NO SAVED RESULT** は失敗または保存結果の欠落として別に記録します。比較画面での人物順には、追跡IDによる継続性を仮定しません。
+### 75–90分　見つけたことを共有する
 
-### 75–90分　条件と観察を残す
-
-各人が1つの区間を選び、素材、元フレーム番号、モデル、起きた現象を記録します。続けて、その現象がHEの用途でどのような影響を持つかを説明し、変える条件と測る値を1つずつ挙げます。 [観察・仮説の記入欄](observations.md)
+75–85分で、各自が素材名、元フレーム番号、モデル、見え方を1件記録します。85–90分で、その観察から考えたHEへの応用案と、次に何を測るかを1人ずつ共有します。 [観察・仮説の記入欄](observations.md)
 
 ### 当日の切替
 
