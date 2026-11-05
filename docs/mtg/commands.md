@@ -2,25 +2,15 @@
 
 **abertのタブは `ssh abert` で接続済みの状態で使います。** カメラ表示とコピーはMacの別タブで行います。GPUはabertの `hepose.local.toml` で設定します。
 
-## 1　Macの別タブでライブを起動
+## 1　接続済みのabertで録画を比較
 
-Mac側のリポジトリへ移動してから実行します。
-
-```bash
-.venv/bin/python -m hepose.cli doctor --role client &&
-.venv/bin/python -m hepose.cli live --camera 0 \
-  --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
-```
-
-画面の `q`、または端末の Ctrl+C で終了。出力先と `summary.json` を控えます。
-
-## 2　接続済みのabertで録画を比較
+ターミナルに `taku@abert` と出ていれば、ここから始めます。
 
 ```bash
 cd /home/taku/he-pose-mtg &&
 root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)" &&
-.venv/bin/python -m hepose.cli doctor --model yolo26 &&
-.venv/bin/python -m hepose.cli doctor --model detrpose &&
+.venv/bin/python -m hepose.cli doctor --role worker --model yolo26 &&
+.venv/bin/python -m hepose.cli doctor --role worker --model detrpose &&
 .venv/bin/python -m hepose.cli benchmark --models yolo26,detrpose \
   --input assets/sample/basic.mp4 --output "$root" &&
 .venv/bin/python -m hepose.cli compare --input-dir "$root" \
@@ -29,6 +19,22 @@ printf '%s\n' "$root"
 ```
 
 最後に表示されたフォルダ名を控え、Macの別タブへ切り替えます。失敗時は端末のエラーを確認します。
+
+## 2　Macの別タブでライブを起動
+
+SSHに入っていないMacの別タブで実行します。`uname -s` が `Darwin` ならMac側です。
+
+```bash
+if [ "$(uname -s)" = Darwin ]; then
+  .venv/bin/python -m hepose.cli doctor --role client &&
+  .venv/bin/python -m hepose.cli live --camera 0 \
+    --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
+else
+  printf '%s\n' 'ライブはMacの別タブで起動してください。' >&2
+fi
+```
+
+画面の `q`、または端末の Ctrl+C で終了。出力先と `summary.json` を控えます。
 
 ## 3　Macの別タブで結果をコピーして再生
 

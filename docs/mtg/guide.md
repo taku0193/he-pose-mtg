@@ -71,7 +71,14 @@ Linuxの各割当GPU、GPU UUID、既存のSSH接続先、両端のコミット�
 | **abert**（SSH接続済み） | 録画の推論と計測、比較動画の生成 |
 | **Mac**（SSHに入っていない別タブ） | カメラのライブ表示、結果のコピーと再生 |
 
-abert側だけで先に試す場合は、40–60分の録画処理から始められます。別のLinuxを割り当てられた参加者は、接続名とリポジトリの場所を各自の環境に置き換えます。
+ターミナルに `taku@abert` と出ているなら、まずそのタブで次を実行します。`ready=True` が出たら、abert側だけで先に試す場合は40–60分の録画処理へ進めます。
+
+```bash
+cd /home/taku/he-pose-mtg &&
+.venv/bin/python -m hepose.cli doctor --role worker --model yolo26
+```
+
+`doctor --role client` はMac用です。abertで実行すると、GUIの確認が `NONE` になります。別のLinuxを割り当てられた参加者は、接続名とリポジトリの場所を各自の環境に置き換えます。
 
 ### 0–20分　見るポイントを決める
 
@@ -79,12 +86,16 @@ abert側だけで先に試す場合は、40–60分の録画処理から始め�
 
 ### 20–40分　Macでカメラの骨格表示を試す
 
-**Macの別タブ**で、Mac側のリポジトリへ移動します。ホームに置いた場合は `cd ~/he-pose-mtg` です。次のコマンドは、Macから `ssh abert` で接続できるSSH設定を使います。
+**SSHに入っていないMacの別タブ**で、Mac側のリポジトリへ移動します。`uname -s` が `Darwin` ならMac側です。ホームに置いた場合は `cd ~/he-pose-mtg` です。次のコマンドは、Macから `ssh abert` で接続できるSSH設定を使います。
 
 ```bash
-.venv/bin/python -m hepose.cli doctor --role client &&
-.venv/bin/python -m hepose.cli live --model yolo26 --camera 0 \
-  --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
+if [ "$(uname -s)" = Darwin ]; then
+  .venv/bin/python -m hepose.cli doctor --role client &&
+  .venv/bin/python -m hepose.cli live --model yolo26 --camera 0 \
+    --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
+else
+  printf '%s\n' 'ライブはMacの別タブで起動してください。' >&2
+fi
 ```
 
 `live` がMacからabertへのSSH接続を開き、abertで推論します。Macにカメラ画面が出たら、腕をゆっくり上げ、次に同じ動きを速く繰り返します。骨格が腕についてくるかを見て、画面で `q` を押します。Macのターミナルに戻ったら、表示されたログの出力先を控えます。Ctrl+Cなどの事前確認は別のセッションで行います。 [受入記録](acceptance.md)

@@ -81,7 +81,7 @@ python3 scripts/prepare_tar_vitpose.py
 | 圧縮 | JPEG品質80 |
 | 期限 | SSH接続5秒、起動45秒、応答15秒、セッション最大30分 |
 
-Macでカメラへのアクセスを求められたら、起動に使うアプリへ許可を与えます。取得サイズと実際の取得FPSは `environment.json` で確認できます。設定の変更は [hepose.example.toml](../hepose.example.toml) の `[live]` を参照してください。
+`doctor --role client` はMacの別タブで実行します。abertではGUIなしのOpenCVを使うため `GUI: NONE` と表示されます。abertの準備状況は `doctor --role worker --model yolo26` で確認します。Macでカメラへのアクセスを求められたら、起動に使うアプリへ許可を与えます。取得サイズと実際の取得FPSは `environment.json` で確認できます。設定の変更は [hepose.example.toml](../hepose.example.toml) の `[live]` を参照してください。
 
 既定の出力は `outputs/live-<ID>/` 以下の `summary.json`、`environment.json`、`timings.csv`、`run.log` です。接続に失敗した場合は `run.log` を見ます。`--show-fps` で表示FPS、直前のアプリ内遅延、推論時間、待機画像の置き換え数を表示します。`--record` では描画した結果を固定FPSのMP4に保存します。実際の取得間隔はCSVで確認できます。
 

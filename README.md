@@ -2,7 +2,7 @@
 
 HE研究室の3人・90分向けの姿勢推定ハンズオンです。Macのカメラで試し、同じ録画を3モデルで見比べます。
 
-[MTGガイド](docs/mtg/guide.md) · [準備](#セットアップ) · [ライブ](#macからyolo26を遠隔実行する) · [実測](#abertでの実測)
+[MTGガイド](docs/mtg/guide.md) · [abertで始める](#abertで最初に試す) · [ライブ](#macからyolo26を遠隔実行する) · [実測](#abertでの実測)
 
 ![Macは映像を取得・表示し、SSH経由でLinux GPUに映像を送り、推定された関節を受け取ります。](assets/readme/connection.svg)
 
@@ -52,34 +52,32 @@ Linuxで [設定例](hepose.example.toml) を `hepose.local.toml` にコピー�
 - **DETRPose-N** — [インストール・重み・スモークテスト](docs/setup.md#detrpose-nの準備とgpu検証)
 - **TAR-ViTPose** — [代表環境の準備と検証](docs/setup.md#tar-vitposeの準備とgpu検証)
 
-### 準備状態を確認する
+### abertで最初に試す
 
-Linuxで、用意したモデルを `doctor` で確認します。3モデルとも用意した環境では `--model all` を使えます。
-
-```bash
-.venv/bin/python -m hepose.cli doctor --model yolo26
-.venv/bin/python -m hepose.cli doctor --model detrpose
-```
-
-### 録画を1本処理する
-
-Linuxで[配布素材](docs/mtg/sample-sources.md)の `basic.mp4` を `assets/sample/` に置きます。モデルと新しい出力先を指定して実行します。
+ターミナルの表示が `taku@abert` なら、このブロックから始めます。GPU側を確認し、[配布素材](docs/mtg/sample-sources.md)の `basic.mp4` を1本処理します。
 
 ```bash
+cd /home/taku/he-pose-mtg &&
+.venv/bin/python -m hepose.cli doctor --role worker --model yolo26 &&
 .venv/bin/python -m hepose.cli run --model yolo26 \
-  --input assets/sample/basic.mp4 --output outputs/basic-yolo26
+  --input assets/sample/basic.mp4 \
+  --output "outputs/basic-yolo26-$(date +%Y%m%d-%H%M%S)"
 ```
 
 `annotated.mp4` に骨格を重ねた映像、`poses.jsonl` に元画像上の関節座標、`timings.csv` に時間、`summary.json`・`environment.json`・`run.log` に実行記録を保存します。[入出力の仕様](docs/setup.md#動画と結果の契約)
 
 ## MacからYOLO26を遠隔実行する
 
-abertに接続済みのタブを開いたまま、**Macの別タブ**でMac側のリポジトリへ移動します。ライブはMacの `abert` SSH設定を使います。abert側では、YOLO26とGPU UUIDの設定、SSHサーバーでのループバック宛TCP転送の許可を済ませておきます。
+abertに接続済みのタブを開いたまま、**SSHに入っていないMacの別タブ**でMac側のリポジトリへ移動します。`uname -s` で `Darwin` と出るタブです。`doctor --role client` はここで実行します。ライブはMacの `abert` SSH設定を使います。abert側では、YOLO26とGPU UUIDの設定、SSHサーバーでのループバック宛TCP転送の許可を済ませておきます。
 
 ```bash
-.venv/bin/python -m hepose.cli doctor --role client &&
-.venv/bin/python -m hepose.cli live --camera 0 \
-  --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
+if [ "$(uname -s)" = Darwin ]; then
+  .venv/bin/python -m hepose.cli doctor --role client &&
+  .venv/bin/python -m hepose.cli live --camera 0 \
+    --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
+else
+  printf '%s\n' 'ライブはMacの別タブで起動してください。' >&2
+fi
 ```
 
 ウィンドウの `q` またはターミナルの Ctrl+C で終了します。出力先の `summary.json` で表示FPS・アプリ内遅延・待機画像の置き換え数を確認できます。動画を保存する場合は `--record` を指定します。[ライブ設定とトラブル時の確認](docs/setup.md#ライブ設定と記録)
