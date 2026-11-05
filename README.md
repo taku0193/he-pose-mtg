@@ -1,10 +1,10 @@
 # HE Pose MTG
 
+![走る姿勢を関節の点と線で描いたモーションスタディのイラスト](assets/readme/pose-in-motion.jpg)
+
 HE研究室の3人・90分向けの姿勢推定ハンズオンです。Macのカメラで試し、同じ録画を3モデルで見比べます。
 
-[MTGガイド](docs/mtg/guide.md) · [abertで始める](#abertで最初に試す) · [ライブ](#macからyolo26を遠隔実行する) · [実測](#abertでの実測)
-
-![Macは映像を取得・表示し、SSH経由でLinux GPUに映像を送り、推定された関節を受け取ります。](assets/readme/connection.svg)
+[比較結果](#比較結果) · [MTGガイド](docs/mtg/guide.md) · [abertで始める](#abertで最初に試す) · [Macでライブ](#macからyolo26を遠隔実行する)
 
 ## できること
 
@@ -20,20 +20,21 @@ HE研究室の3人・90分向けの姿勢推定ハンズオンです。Macのカ
 | --- | --- | --- |
 | **YOLO26n-Pose** | 1枚 | 全員がMacからライブを操作し、録画も処理 |
 | **DETRPose-N** | 1枚 | 全員がYOLO26と同じ録画を処理 |
-| **TAR-ViTPose** | 中心と前後2枚、計5枚 | 代表環境でオフライン実演。人物の領域はYOLO11xで取得 |
+| **TAR-ViTPose Base** | 中心と前後2枚、計5枚 | 代表環境でオフライン実演。人物の領域はYOLO11xで取得 |
 
-## abertでの実測
+## 比較結果
 
-RTX 3090を1台使い、15秒・25 FPSの運動動画で計測しました。PyTorch・FP32・batch=1で、共通の20フレームでウォームアップし、続く100フレームを測定しています。
+**YOLO26n-Poseが3素材すべてで最速でした。** 速い動きの素材で人物を1人も出力しなかったフレームは、DETRPose-Nが最少でした。関節の正解座標がないため、姿勢推定の精度順位は未評価です。
 
-| 単フレームモデル | 録画処理FPS | モデル推論 p50 | モデル推論 p95 |
+| 素材 | YOLO26n-Pose | DETRPose-N | TAR-ViTPose Base |
 | --- | ---: | ---: | ---: |
-| YOLO26n-Pose | **178.00** | 3.03 ms | 3.10 ms |
-| DETRPose-N | **66.51** | 6.60 ms | 6.69 ms |
+| `basic` · 1人の腕上げ | **178.69** | 68.56 | 16.78 |
+| `fast` · 速い反復動作 | **178.00** | 66.51 | 20.36 |
+| `multi` · 複数人の交差 | **163.02** | 65.27 | 5.80 |
 
-**TAR-ViTPose（オフライン）**は **20.36 FPS**。人物検出とクロップを含む処理速度です。TAR本体の推論時間は、人物を検出した77フレームで p50 **35.84 ms**、p95 **36.34 ms** でした。
+表は録画処理FPSです。2026年11月5日にabertのRTX 3090で、PyTorch・FP32・batch=1を使い、共通の20枚でウォームアップした後の100枚を測定しました。TARの値にはYOLO11xによる人物検出と切り出しを含みます。
 
-録画処理FPSには復号・描画・フレーム単位の書き込みを含みます。推論時間はモデルのforwardを測った値です。精度はN/A（GTなし）。[実測の条件と集計](docs/pr-notes/benchmark.md) · [3素材の実行記録](docs/experiments/mtg-abert-2026-11-05.json)
+`fast` の共通371フレームで人物が0件だったのは、YOLO26が15枚、DETRPoseが6枚、TARが55枚でした。この件数には各モデルの検出閾値が影響し、主役を捉えた割合は分かりません。 [詳しい分析と集計CSV](docs/experiments/pose-analysis-2026-11-05/README.md) · [実行記録](docs/experiments/mtg-abert-2026-11-05.json)
 
 abertでは3素材の録画推論・同期比較と、LinuxからのSSH録画再送を確認済みです。参加者3人のMac実機でのカメラ・表示・結果回収は、[受入表](docs/mtg/acceptance.md)で個別に確認します。
 
@@ -67,6 +68,8 @@ cd /home/taku/he-pose-mtg &&
 `annotated.mp4` に骨格を重ねた映像、`poses.jsonl` に元画像上の関節座標、`timings.csv` に時間、`summary.json`・`environment.json`・`run.log` に実行記録を保存します。[入出力の仕様](docs/setup.md#動画と結果の契約)
 
 ## MacからYOLO26を遠隔実行する
+
+![Macは映像を取得・表示し、SSH経由でLinux GPUに映像を送り、推定された関節を受け取ります。](assets/readme/connection.svg)
 
 abertに接続済みのタブを開いたまま、**SSHに入っていないMacの別タブ**でMac側のリポジトリへ移動します。`uname -s` で `Darwin` と出るタブです。`doctor --role client` はここで実行します。ライブはMacの `abert` SSH設定を使います。abert側では、YOLO26とGPU UUIDの設定、SSHサーバーでのループバック宛TCP転送の許可を済ませておきます。
 
