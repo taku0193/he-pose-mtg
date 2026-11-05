@@ -12,9 +12,9 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-05：確定仕様はv1.4。3モデルの録画動画推論とYOLO26遠隔ライブを実装しました。abertのRTX 3090で同じ15秒・375フレームの運動動画を3モデルで検証済みです。遠隔ライブも同じ動画をLinuxからSSHで送り、GPU推論・元フレームへの描画・終了処理を確認しました。3モデルの共通100フレームを同じRTX 3090で順次計測し、全375フレームの比較動画を生成しました。Mac実機のカメラと表示、最終3素材、MTGガイド、3人全員の受入は未完了です。
+2026-11-05：確定仕様はv1.4。3モデルの録画動画推論とYOLO26遠隔ライブを実装しました。abertのRTX 3090で同じ15秒・375フレームの運動動画を3モデルで検証済みです。遠隔ライブも同じ動画をLinuxからSSHで送り、GPU推論・元フレームへの描画・終了処理を確認しました。3モデルの共通100フレームを同じRTX 3090で順次計測し、全375フレームの比較動画を生成しました。本番用3素材の比較動画と90分のMTGガイドも用意しました。Mac実機のカメラと表示、参加者3人の受入は未確認です。
 
-MTG資料はGoogleドキュメントのような章立ての文書とし、Markdown原稿を管理します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
+90分の進行、実演、測定の読み方は[MTGガイド](docs/mtg/guide.md)、操作は[コマンド表](docs/mtg/commands.md)を参照してください。参加者別の結果は[受入記録](docs/mtg/acceptance.md)に残します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
 
 確定仕様は[docs/implementation-spec.md](docs/implementation-spec.md)です。[v1.2のレビュー記録](docs/pr-notes/spec-v1.2.md)と[MTG資料形式の変更記録](docs/pr-notes/mtg-document-format.md)に修正点と確認範囲をまとめています。実装開始時は[AGENTS.md](AGENTS.md)と[HANDOFF.md](HANDOFF.md)、[CODEX_START_PROMPT.md](CODEX_START_PROMPT.md)を読んでください。
 
@@ -24,7 +24,7 @@ MTG資料はGoogleドキュメントのような章立ての文書とし、Markd
 
 重み・大容量動画・認証情報はGit管理対象外です。公式ベンチマークと自前の実測値を区別します。
 
-通常実行はローカルに準備済みの重みを使い、不足時に自動取得しません。次の工程は最終素材と、比較結果を使ったMTGガイドの準備です。
+通常実行はローカルに準備済みの重みを使い、不足時に自動取得しません。開催前の実機確認は[MTGガイド](docs/mtg/guide.md)の手順で行います。
 
 ## 開発環境の準備
 
@@ -88,9 +88,9 @@ python3 scripts/prepare_validation_video.py
 
 専用環境の固定版はenvironments/yolo26/uv.lock、公式コミット・重みSHA256・ライセンスは[モデル記録](docs/model-manifests/yolo26.json)にあります。Ultralytics 8.4.202、PyTorch 2.14.1+cu126、torchvision 0.29.1+cu126で確認しました。入力は640×640、batch=1、FP32です。通常実行では公式重みのSHA256を照合し、不足・不一致や指定GPUの利用不可は理由付きの失敗にします。割当GPUのUUIDを設定すると、別GPUの誤使用も検出できます。
 
-検証用動画はTaco fleur氏の[Jumping jacks and burpees](https://commons.wikimedia.org/wiki/File:Jumping_jacks_and_burpees.webm)（CC BY-SA 4.0）の冒頭15秒です。[出典・加工内容](assets/sample/jumping-jacks-ATTRIBUTION.md)と[元・変換後の識別情報](docs/validation-assets/jumping-jacks.json)を残しています。骨格を重ねた動画を持ち出すときも出典・ライセンス・加工内容を添えてください。仕様のbasic／fast／multiという最終3素材はまだ揃っていません。
+検証用動画はTaco fleur氏の[Jumping jacks and burpees](https://commons.wikimedia.org/wiki/File:Jumping_jacks_and_burpees.webm)（CC BY-SA 4.0）の冒頭15秒です。[出典・加工内容](assets/sample/jumping-jacks-ATTRIBUTION.md)と[元・変換後の識別情報](docs/validation-assets/jumping-jacks.json)を残しています。骨格を重ねた動画を持ち出すときも出典・ライセンス・加工内容を添えてください。MTGで使うbasic／fast／multiの配布条件・再現は[素材の出典](docs/mtg/sample-sources.md)にあります。
 
-GPUスモークは画像の人物検出、動画の最後までの処理、元フレーム対応、出力動画の再復号を確認します。Pythonのインターネット接続呼出しも禁止・記録します。既定の30フレームは公式静止画の反復動画で、運動動画の検証には--videoを明示します。正解アノテーションがないため精度は未評価です。通常runの時間記録は残りますが、ウォームアップ20件＋本計測100件以上のモデル比較benchmarkは未実装です。
+GPUスモークは画像の人物検出、動画の最後までの処理、元フレーム対応、出力動画の再復号を確認します。Pythonのインターネット接続呼出しも禁止・記録します。既定の30フレームは公式静止画の反復動画で、運動動画の検証には--videoを明示します。正解アノテーションがないため精度は未評価です。通常runの時間記録と、後述のbenchmarkで測った共通100件の集計を区別します。
 
 ## DETRPose-Nの準備とGPU検証
 

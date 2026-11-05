@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-05",
+  "ffmpeg": "ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "clips": {
+    "basic": {
+      "title": "Squat and Frontal Raise",
+      "author": "Taco fleur",
+      "license": "CC BY-SA 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Squat_and_Frontal_Raise.webm",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Squat_and_Frontal_Raise.webm",
+      "original_sha256": "18c66dcb8323d14a8e0197ea4f379e609b068d9b2cd2233d8b60d8fa5d26fb02",
+      "clip": {
+        "path": "assets/sample/basic.mp4",
+        "start_s": 2,
+        "duration_s": 12.0,
+        "frame_count": 300,
+        "fps": 25,
+        "width": 640,
+        "height": 480,
+        "sha256": "51eb714f88e927f8b716badb895867144772a87d7ef3b2db76f4b1b4b4919135"
+      }
+    },
+    "fast": {
+      "title": "Jumping jacks and burpees",
+      "author": "Taco fleur",
+      "license": "CC BY-SA 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Jumping_jacks_and_burpees.webm",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Jumping_jacks_and_burpees.webm",
+      "original_sha256": "1c8370a29c52b5b1538f03f8c63be6cdc9333dea3cbd77cc8f2af0dbe496d5b4",
+      "clip": {
+        "path": "assets/sample/fast.mp4",
+        "start_s": 0,
+        "duration_s": 15.0,
+        "frame_count": 375,
+        "fps": 25,
+        "width": 640,
+        "height": 480,
+        "sha256": "67d48a46e86fe66e8d096761f0c23098097855b2d04a94a8d88bf14d00d16642"
+      }
+    },
+    "multi": {
+      "title": "Salsa Dancing Fundamentals",
+      "author": "Floresaj",
+      "license": "CC BY-SA 4.0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Salsa_Dancing_Fundamentals.webm",
+      "original_url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Salsa_Dancing_Fundamentals.webm",
+      "original_sha256": "f44c133fdfec50debce4fd17f668e43b0b0dba8ebb7db4d332b0f2c2564ac0b3",
+      "clip": {
+        "path": "assets/sample/multi.mp4",
+        "start_s": 43,
+        "duration_s": 12.0,
+        "frame_count": 300,
+        "fps": 25,
+        "width": 640,
+        "height": 480,
+        "sha256": "03d9fb663e064a9c81701c0197ef946f18673bae6709664c8f31924d23de38df"
+      }
+    }
+  },
+  "preparation": "docs/mtg/sample-sources.md"
+}

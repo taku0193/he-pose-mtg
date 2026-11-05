@@ -25,7 +25,8 @@
 | 遠隔ライブ | Linuxクライアント→SSH→abertのRTX 3090を実証。25 FPS録画再送は375枚中369枚を描画、6枚を置き換え。切断・Ctrl+C・期限後のワーカー終了を確認 |
 | 最新の遠隔ライブ検証 | コミット0af7c37、outputs/live-ssh-final。再現手順・負荷試験・制限はdocs/pr-notes/remote-live.md |
 | ベンチマーク・比較 | abertのRTX 3090で3モデルを同じ元フレーム22〜121の100件で順次測定。25 FPS・375枚の比較動画と表をoutputs/benchmark-abert-2026-11-05へ保存 |
-| 未完了の必須機能 | Mac実機のカメラ・表示、最終3素材、MTGガイド、3人分の受入 |
+| MTGガイドと素材 | docs/mtgのガイド、台本、コマンド表、記入欄。basic・fast・multiを用意し、abertで各素材の100件の順次計測と同期比較を確認 |
+| 未実施の受入 | Mac実機のカメラ・表示、3人分の実行・回収・オフライン再生 |
 | GitHub公開範囲 | 2026-11-04にユーザーが公開管理を明示許可。APIのpublic設定と一致し、push保留は解除済み |
 
 各モデルの実動作・TDD・制限はdocs/pr-notes/、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの取得不能な矩形・関節confidence・visibilityはnull。TARはhead_bottom／head_topをnative関節へ保持し、COCOの目・耳はnullとする。TARの境界4枚も元時間軸で保存する。
@@ -52,14 +53,9 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 
 既存のGPU結果ディレクトリは上書きしない。新たに試す場合はREADMEの手順と新しい出力先を使う。通常runは入力フレームを削らない。benchmarkのウォームアップ・実測条件はdocs/pr-notes/benchmark.mdを参照する。
 
-## 残りの順序
+## 開催前の確認
 
-| ブランチ | 内容 |
-| --- | --- |
-| 素材準備 | basic、fast、multiの出典・条件を確定し、比較結果を揃える |
-| docs/mtg-materials | GoogleドキュメントのようなMTGガイドのMarkdown原稿、進行表・台本・チートシート・まとめ |
-
-各人のMac→専用Linux GPU→Mac表示はREADMEの手順で別途受け入れる。YOLO26とDETRPoseは3人全員、TARは代表環境で実証する。開催日と準備期限は未定。
+各人が[ガイド](docs/mtg/guide.md)の手順を実行し、[受入記録](docs/mtg/acceptance.md)へ記入する。開催日と準備期限は未定。abertでの代表結果と、3人それぞれの実行結果を分けて扱う。
 
 ## 上流調査の注意点
 
