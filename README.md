@@ -12,7 +12,7 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-05：確定仕様はv1.4。3モデルの録画動画推論とYOLO26遠隔ライブを実装しました。abertのRTX 3090で同じ15秒・375フレームの運動動画を3モデルで検証済みです。遠隔ライブも同じ動画をLinuxからSSHで送り、GPU推論・元フレームへの描画・終了処理を確認しました。Mac実機のカメラと表示、ベンチマーク、比較動画、MTGガイド、3人全員の受入は未完了です。
+2026-11-05：確定仕様はv1.4。3モデルの録画動画推論とYOLO26遠隔ライブを実装しました。abertのRTX 3090で同じ15秒・375フレームの運動動画を3モデルで検証済みです。遠隔ライブも同じ動画をLinuxからSSHで送り、GPU推論・元フレームへの描画・終了処理を確認しました。3モデルの共通100フレームを同じRTX 3090で順次計測し、全375フレームの比較動画を生成しました。Mac実機のカメラと表示、最終3素材、MTGガイド、3人全員の受入は未完了です。
 
 MTG資料はGoogleドキュメントのような章立ての文書とし、Markdown原稿を管理します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
 
@@ -24,7 +24,7 @@ MTG資料はGoogleドキュメントのような章立ての文書とし、Markd
 
 重み・大容量動画・認証情報はGit管理対象外です。公式ベンチマークと自前の実測値を区別します。
 
-通常実行はローカルに準備済みの重みを使い、不足時に自動取得しません。遠隔ライブの次は、同一素材・同一GPUでの測定と元フレームを揃えた比較です。
+通常実行はローカルに準備済みの重みを使い、不足時に自動取得しません。次の工程は最終素材と、比較結果を使ったMTGガイドの準備です。
 
 ## 開発環境の準備
 
@@ -67,7 +67,7 @@ hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPy
   --input assets/sample/jumping-jacks-validation.mp4 --output outputs/yolo26 --device cuda:0
 ```
 
-3モデルのrunは実装済みです。全モデルを準備したabertではdoctor --model allがready=trueです。未準備の環境では不足を報告して終了コード1です。liveはYOLO26専用です。benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
+3モデルのrunは実装済みです。全モデルを準備したabertではdoctor --model allがready=trueです。未準備の環境では不足を報告して終了コード1です。liveはYOLO26専用です。benchmark・compareの手順は下記を参照してください。
 
 ## YOLO26n-Poseの準備とGPU検証
 
@@ -152,6 +152,24 @@ python3 scripts/prepare_tar_vitpose.py
 入力は中心の前後2枚を含む連続5フレームです。TARへ渡す人物クロップは288×384で、同じ領域を5枚から切り出します。元画像へ座標を戻し、head_bottom／head_topを保持します。COCOの目・耳と、取得できない関節confidence／visibilityはnullです。
 
 375枚の入力に対し、共通出力は375枚、元フレーム0・1・373・374はNOT ESTIMATED、残る371枚を処理します。公式CLIの371枚の出力と生JSONも別保存します。公式の生JSONにはクロップ内座標と固定visibilityが残るため、共通JSONとして扱いません。TARの時間はオフライン推論の測定であり、将来のMac遠隔ライブ遅延と同列に比較しません。
+
+## 3モデルを計測して比較動画を作る
+
+Linux側で3モデルを準備し、`hepose.local.toml` の各モデルに同じ割当GPUの `gpu_uuid` とモデル環境の `python` を指定します。最初は[出典のある運動動画](assets/sample/jumping-jacks-ATTRIBUTION.md)を使います。
+
+```bash
+.venv/bin/python -m hepose.cli benchmark --models yolo26,detrpose,tar-vitpose \
+  --input assets/sample/jumping-jacks-validation.mp4 \
+  --output outputs/benchmark-run --device cuda:0
+.venv/bin/python -m hepose.cli compare --input-dir outputs/benchmark-run \
+  --output outputs/benchmark-run/comparison.mp4
+```
+
+3モデルが推定できる同じ元フレームから20件をウォームアップし、その後の100件を測定します。対象フレームが不足した場合は `insufficient_samples` と記録します。各モデルの全編出力と `benchmark.csv`、`report.md`、`environment.json` を保存します。処理FPSとモデル推論時間は異なる指標です。TARは前後2枚と人物検出器を使うため、レポートではオフライン処理として別枠にしています。
+
+`compare` は2種類以上のモデルの保存済み結果を使います。比較対象ごとに1実行だけ入ったディレクトリを指定してください。元動画を移動したときは `--input` で同じSHA256のファイルを指定できます。元の枚数とFPSを保ち、TARの先頭・末尾各2枚は `NOT ESTIMATED` と表示します。
+
+Macに持ち帰るには、Macのターミナルから `scp -r "YOUR_SSH_ALIAS:/home/taku/he-pose-mtg/outputs/benchmark-run" .` を実行します。持ち帰った `comparison.mp4` と `report.md` はオフラインで閲覧できます。計測条件と実測値は[abertの検証記録](docs/pr-notes/benchmark.md)にあります。
 
 ## 動画と結果の契約
 

@@ -133,7 +133,7 @@ TARの人物検出器、ViTPose初期化用重み、TAR本体重みを依存モ�
 
 ## 7. CLIと出力の仕様
 
-次は完成時のインターフェース。共通CLI・doctor・動画パイプラインと3モデルのアダプタは実装済み。遠隔ライブは実装し、Linux上の録画再送でSSH・GPU処理を検証済み。Mac実機での受入、ベンチマーク、比較動画は未完了。basic.mp4等の最終素材は未用意であり、現状の再現コマンドはREADMEを参照する。
+次は完成時のインターフェース。共通CLI・doctor・動画パイプラインと3モデルのアダプタは実装済み。遠隔ライブは実装し、Linux上の録画再送でSSH・GPU処理を検証済み。ベンチマークと比較動画は同じ素材・GPUで検証済み。Mac実機での受入は未完了。basic.mp4等の最終素材は未用意であり、現状の再現コマンドはREADMEを参照する。
 
 ```bash
 # Mac：モデル・CUDAを要求しないクライアント環境確認
@@ -150,7 +150,7 @@ python -m hepose.cli live --model yolo26 --camera 0 --remote <SSH_ALIAS> --remot
 
 # Linux：同一GPU・同一動画で順番に測定し、元動画の時刻で比較
 python -m hepose.cli benchmark --models yolo26,detrpose --input assets/sample/basic.mp4 --output outputs/benchmark --device cuda:0
-python -m hepose.cli compare --input-dir outputs --output outputs/comparison.mp4
+python -m hepose.cli compare --input-dir outputs/benchmark --output outputs/benchmark/comparison.mp4
 ```
 
 `cuda:0`は当該プロセス内の番号を表す例。各人のGPU割当を設定したうえで使う。SSH先、プロジェクト場所、モデル環境へのパスはローカル設定で管理し、秘密鍵・パスワードはプロジェクトに保存しない。

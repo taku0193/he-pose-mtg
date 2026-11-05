@@ -13,7 +13,7 @@
 | YOLO26n-Pose | 公式画像・反復画像動画・実際の運動動画をGPU検証済み。DETR工程で共通GPU確認処理を分離した後もGPU回帰確認 |
 | DETRPose-N | feat/detrposeで画像・動画・共通CLIを実装し、公式画像APIとの座標一致と375フレーム動画をGPU検証済み |
 | 最新のDETR実動画検証ソース | a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false |
-| 単体テスト | モデル不要99件＋11 subtests、ruff、CLI help。最新のLinux／macOS CIはActionsを参照 |
+| 単体テスト | モデル不要107件＋11 subtests、ruff、CLI help。最新のLinux／macOS CIはActionsを参照 |
 | モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
 | 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
 | 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |
@@ -24,7 +24,8 @@
 | 全モデルのdoctor | abertの割当GPU 0で3モデルともready=true。work/doctor-all-gpu.json |
 | 遠隔ライブ | Linuxクライアント→SSH→abertのRTX 3090を実証。25 FPS録画再送は375枚中369枚を描画、6枚を置き換え。切断・Ctrl+C・期限後のワーカー終了を確認 |
 | 最新の遠隔ライブ検証 | コミット0af7c37、outputs/live-ssh-final。再現手順・負荷試験・制限はdocs/pr-notes/remote-live.md |
-| 未完了の必須機能 | Mac実機のカメラ・表示、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
+| ベンチマーク・比較 | abertのRTX 3090で3モデルを同じ元フレーム22〜121の100件で順次測定。25 FPS・375枚の比較動画と表をoutputs/benchmark-abert-2026-11-05へ保存 |
+| 未完了の必須機能 | Mac実機のカメラ・表示、最終3素材、MTGガイド、3人分の受入 |
 | GitHub公開範囲 | 2026-11-04にユーザーが公開管理を明示許可。APIのpublic設定と一致し、push保留は解除済み |
 
 各モデルの実動作・TDD・制限はdocs/pr-notes/、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの取得不能な矩形・関節confidence・visibilityはnull。TARはhead_bottom／head_topをnative関節へ保持し、COCOの目・耳はnullとする。TARの境界4枚も元時間軸で保存する。
@@ -49,13 +50,13 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 4. GPU工程は許可済みのGPU 0で行う。利用不可なら理由を記録し、別GPUやCPUへ自動切替しない。
 5. 小さな機能単位でRed→Greenを実行し、work/tddとdocs/pr-notesへ記録する。単体試験はモデル・重み・GPU・ネットワークなしで実行する。
 
-既存のGPU結果ディレクトリは上書きしない。新たに試す場合はREADMEの手順と新しい出力先を使う。通常runは入力フレームを削らない。性能比較のウォームアップ20件＋本計測100件以上は後続benchmarkの条件である。
+既存のGPU結果ディレクトリは上書きしない。新たに試す場合はREADMEの手順と新しい出力先を使う。通常runは入力フレームを削らない。benchmarkのウォームアップ・実測条件はdocs/pr-notes/benchmark.mdを参照する。
 
 ## 残りの順序
 
 | ブランチ | 内容 |
 | --- | --- |
-| feat/benchmark | 同一GPU・同一素材で順次測定、比較動画、表・レポート |
+| 素材準備 | basic、fast、multiの出典・条件を確定し、比較結果を揃える |
 | docs/mtg-materials | GoogleドキュメントのようなMTGガイドのMarkdown原稿、進行表・台本・チートシート・まとめ |
 
 各人のMac→専用Linux GPU→Mac表示はREADMEの手順で別途受け入れる。YOLO26とDETRPoseは3人全員、TARは代表環境で実証する。開催日と準備期限は未定。
