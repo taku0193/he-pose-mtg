@@ -2,7 +2,9 @@
 
 HE研究室の3人・90分向けの姿勢推定ハンズオンです。Macのカメラで試し、同じ録画を3モデルで見比べます。
 
-[MTGガイド](docs/mtg/guide.md) · [セットアップ](#セットアップ) · [遠隔ライブ](#macからyolo26を遠隔実行する) · [実測結果](#abertでの実測)
+[MTGガイド](docs/mtg/guide.md) · [準備](#セットアップ) · [ライブ](#macからyolo26を遠隔実行する) · [実測](#abertでの実測)
+
+![Macは映像を取得・表示し、SSH経由でLinux GPUに映像を送り、推定された関節を受け取ります。](assets/readme/connection.svg)
 
 ## できること
 

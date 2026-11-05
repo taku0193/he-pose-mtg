@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="112" viewBox="0 0 760 112" role="img" aria-labelledby="title description">
+  <title id="title">Mac, SSH, and Linux GPU</title>
+  <desc id="description">The Mac sends camera frames through SSH and overlays the keypoints returned by YOLO26 on the Linux GPU.</desc>
+  <rect x=".5" y=".5" width="759" height="111" rx="8" fill="#FFFFFF" stroke="#D0D7DE"/>
+  <g fill="#1F2328" font-family="system-ui, sans-serif" font-size="30" font-weight="600" text-anchor="middle">
+    <text x="126" y="52">Mac</text>
+    <text x="380" y="52">SSH</text>
+    <text x="634" y="52">Linux GPU</text>
+  </g>
+  <g fill="#57606A" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">
+    <text x="126" y="80">Camera + display</text>
+    <text x="380" y="80">Frames + keypoints</text>
+    <text x="634" y="80">YOLO26 · RTX 3090</text>
+  </g>
+  <g fill="none" stroke="#28609B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M231 56h56m-49-6-7 6 7 6m42-12 7 6-7 6"/>
+    <path d="M473 56h56m-49-6-7 6 7 6m42-12 7 6-7 6"/>
+  </g>
+</svg>
