@@ -42,6 +42,7 @@ def test_camera_quit_releases_owned_resources_and_saves_only_stats(monkeypatch, 
     class Camera:
         def __init__(self, source):
             assert source == 0
+            self.first = True
 
         def isOpened(self):
             return True
@@ -56,7 +57,10 @@ def test_camera_quit_releases_owned_resources_and_saves_only_stats(monkeypatch, 
             return 25.0
 
         def read(self):
-            shown.wait(0.005)
+            # Keep the source open until the GUI has displayed the first result.
+            if not self.first:
+                shown.wait(2)
+            self.first = False
             return True, image.copy()
 
         def release(self):
