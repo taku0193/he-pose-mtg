@@ -10,9 +10,9 @@ import sys
 from pathlib import Path
 from time import perf_counter_ns
 
-from hepose.adapters import Prediction
+from hepose.adapters import MODEL_TEMPORAL, Prediction
 from hepose.runtime import validate_runtime_device, verify_asset
-from hepose.schema import Keypoint, Person, TemporalContext, coco17, finite
+from hepose.schema import Keypoint, Person, coco17, finite
 from hepose.timing import summarize
 
 UPSTREAM_COMMIT = "42164c2c789a5297544dd836846e509459b0f1f3"
@@ -256,7 +256,7 @@ def inspect_tar(settings: dict, device: str) -> dict:
 
 class TarVitposeAdapter:
     model_id = "tar-vitpose"
-    temporal = TemporalContext(window_size=5, step=1, future_frames=2)
+    temporal = MODEL_TEMPORAL["tar-vitpose"]
 
     def __init__(self, device: str, settings: dict):
         self.artifacts, repository, self.source = local_assets(settings)

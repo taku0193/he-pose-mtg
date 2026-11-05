@@ -45,3 +45,28 @@ def test_short_measurement_does_not_trim_video_or_turn_missing_times_into_zero(
     with (out / "timings.csv").open(newline="") as stream:
         rows = list(csv.DictReader(stream))
     assert [int(row["frame_index"]) for row in rows] == list(range(8))
+
+
+def test_controller_refuses_different_gpu_assignments_before_any_model(
+    sample_video, tmp_path, monkeypatch
+):
+    from hepose.benchmark import run_benchmark
+    from hepose.config import Configuration
+
+    def unexpected_worker(*args, **kwargs):
+        raise AssertionError("controller attempted to launch a worker")
+
+    monkeypatch.setattr("hepose.benchmark.subprocess.run", unexpected_worker)
+    config = Configuration(
+        models={
+            "yolo26": {"gpu_uuid": "GPU-a", "device": "cuda:0"},
+            "detrpose": {"gpu_uuid": "GPU-b", "device": "cuda:0"},
+        }
+    )
+    output = tmp_path / "mismatched"
+    result = run_benchmark(sample_video, output, ("yolo26", "detrpose"), config)
+    assert result["status"] == "failed"
+    assert "gpu_uuid" in result["error"]
+    assert not (output / "yolo26").exists()
+    assert (output / "report.md").exists()
+    assert (output / "run.log").exists()

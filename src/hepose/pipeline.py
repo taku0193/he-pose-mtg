@@ -8,6 +8,7 @@ from time import perf_counter_ns
 from uuid import uuid4
 
 from hepose.environment import collect_environment
+from hepose.measurement import Measurement, MeasurementPlan
 from hepose.render import draw_poses
 from hepose.results import RunWriter, write_json
 from hepose.schema import FrameResult
@@ -23,6 +24,7 @@ def run_video(
     model_id: str,
     device: str = "cuda:0",
     configuration: dict | None = None,
+    measurement: MeasurementPlan | None = None,
 ) -> dict:
     input_path, output = Path(input_path), Path(output)
     run_id = uuid4().hex
@@ -39,6 +41,13 @@ def run_video(
     with RunWriter(output, run_id, environment) as results:
         environment.update(collect_environment(input_path, model_id, device))
         write_json(output / "environment.json", environment)
+        if (
+            measurement
+            and measurement.sha256
+            and environment["input"]["sha256"] != measurement.sha256
+        ):
+            raise VideoError("計測計画の入力SHA256が一致しません。")
+        tracker = Measurement(measurement) if measurement else None
         if not input_path.is_file():
             raise VideoError(f"入力動画がありません: {input_path}")
         with ExitStack() as resources:
@@ -63,6 +72,13 @@ def run_video(
                 VideoWriter(output / "annotated.mp4", reader.fps, (reader.width, reader.height))
             )
             temporal = adapter.temporal
+            if tracker:
+                if any(
+                    temporal.references(index, measurement.source_count) is None
+                    for index in (*measurement.warmup_frames, *measurement.measured_frames)
+                ):
+                    raise VideoError("共通の計測範囲に推定できないフレームが含まれています。")
+                resources.callback(lambda: results.details.update(benchmark=tracker.summary()))
             buffer = deque(maxlen=(temporal.window_size - 1) * temporal.step + 1)
             output_index = 0
             emitted = 0
@@ -74,6 +90,8 @@ def run_video(
                 target = lookup[target_index]
                 references = temporal.references(target_index, available_count)
                 timings = {"decode_ms": target.decode_ms}
+                if tracker:
+                    tracker.begin(target_index, buffer[-1].read_started_ns or perf_counter_ns())
                 common = {
                     "run_id": run_id,
                     "model_id": model_id,
@@ -104,9 +122,10 @@ def run_video(
                         output_index += 1
                         model_times.append(prediction.inference_ms)
                     except Exception as exc:
-                        results.write(
-                            FrameResult(**common, status="failed", reason=str(exc)), timings
-                        )
+                        failure = FrameResult(**common, status="failed", reason=str(exc))
+                        results.write(failure, timings)
+                        if tracker:
+                            tracker.finish(failure, timings)
                         raise
                 render_started = perf_counter_ns()
                 rendered = draw_poses(target.image, result)
@@ -117,6 +136,8 @@ def run_video(
                 if target.read_started_ns is not None:
                     timings["total_ms"] = (perf_counter_ns() - target.read_started_ns) / 1_000_000
                 results.write(result, timings)
+                if tracker:
+                    tracker.finish(result, timings)
                 emitted += 1
 
             for frame in reader:
@@ -125,6 +146,8 @@ def run_video(
                     emit(frame.frame_index - temporal.future_frames, reader.decoded)
             for index in range(emitted, reader.decoded):
                 emit(index, reader.decoded)
+            if measurement and reader.decoded != measurement.source_count:
+                raise VideoError("入力動画のフレーム数が計測計画と一致しません。")
             if not output_index:
                 raise VideoError("推定可能な中心フレームがありません。")
         # Resources close (including output decode verification) before run success is recorded.

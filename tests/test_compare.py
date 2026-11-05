@@ -85,3 +85,25 @@ def test_wrong_original_video_is_refused(runs, sample_video, tmp_path):
     with pytest.raises(ValueError, match="SHA256"):
         compare_video(runs, output, source=wrong)
     assert not output.exists()
+
+
+def test_failed_runs_keep_failed_and_missing_frames_visible(runs, sample_video, tmp_path):
+    class Failing:
+        model_id = "detrpose"
+        temporal = TemporalContext()
+
+        def predict(self, frames, index):
+            if index == 4:
+                raise RuntimeError("simulated worker failure")
+            return Prediction((), None, None)
+
+        def environment(self):
+            return {}
+
+        def close(self):
+            pass
+
+    with pytest.raises(RuntimeError, match="simulated"):
+        run_video(sample_video, runs / "detr", Failing, model_id="detrpose")
+    output = tmp_path / "comparison.mp4"
+    assert compare_video(runs, output) == 8

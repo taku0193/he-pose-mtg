@@ -6,6 +6,12 @@ from typing import Protocol
 
 from hepose.schema import Person, TemporalContext, finite
 
+MODEL_TEMPORAL = {
+    "yolo26": TemporalContext(),
+    "detrpose": TemporalContext(),
+    "tar-vitpose": TemporalContext(window_size=5, step=1, future_frames=2),
+}
+
 
 @dataclass(frozen=True, slots=True)
 class InputFrame:

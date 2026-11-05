@@ -9,9 +9,9 @@ import subprocess
 from pathlib import Path
 from time import perf_counter_ns
 
-from hepose.adapters import Prediction
+from hepose.adapters import MODEL_TEMPORAL, Prediction
 from hepose.runtime import validate_runtime_device, verify_asset
-from hepose.schema import COCO17, Keypoint, Person, TemporalContext, finite
+from hepose.schema import COCO17, Keypoint, Person, finite
 
 UPSTREAM_COMMIT = "da12e0cd29864b1d3a289c562c34d423371a4157"
 HF_REVISION = "8e11f255908c7869d9a257b2669a9012957b6d0a"
@@ -131,7 +131,7 @@ def parse_result(result: dict, width: int, height: int, *, inference_ms=None, me
 
 class DetrposeAdapter:
     model_id = "detrpose"
-    temporal = TemporalContext()
+    temporal = MODEL_TEMPORAL["detrpose"]
 
     def __init__(self, device: str, settings: dict):
         weights, repo = local_settings(settings)

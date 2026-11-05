@@ -22,6 +22,26 @@ def device_argument(value: str) -> str:
         raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
+def model_list(value):
+    models = tuple(model.strip() for model in value.split(","))
+    if not all(model in MODEL_IDS for model in models) or len(set(models)) != len(models):
+        raise argparse.ArgumentTypeError("モデル名を重複なくカンマ区切りで指定してください。")
+    return models
+
+
+def bounded_integer(minimum):
+    def parse(value):
+        try:
+            number = int(value)
+        except ValueError as exc:
+            raise argparse.ArgumentTypeError("整数を指定してください。") from exc
+        if number < minimum:
+            raise argparse.ArgumentTypeError(f"{minimum}以上を指定してください。")
+        return number
+
+    return parse
+
+
 def record_worker_failure(args, settings, device, error):
     from hepose.results import RunWriter
 
@@ -55,6 +75,7 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--output", type=Path, required=True)
     run.add_argument("--device", type=device_argument)
     run.add_argument("--local", action="store_true", help=argparse.SUPPRESS)
+    run.add_argument("--benchmark-plan", type=Path, help=argparse.SUPPRESS)
     live = commands.add_parser("live", help="YOLO26のSSH遠隔ライブ")
     live.add_argument("--model", choices=("yolo26",), default="yolo26")
     source = live.add_mutually_exclusive_group()
@@ -84,14 +105,19 @@ def parser() -> argparse.ArgumentParser:
         ("headless", "画面を開かない検証（--videoが必要）"),
     ):
         live.add_argument(f"--{name}", action=argparse.BooleanOptionalAction, help=help_text)
-    benchmark = commands.add_parser("benchmark", help="モデル別の順次計測（未実装）")
-    benchmark.add_argument("--models", required=True)
+    benchmark = commands.add_parser("benchmark", help="同じGPU・入力・フレーム順でモデルを順次計測")
+    benchmark.add_argument("--models", required=True, type=model_list)
     benchmark.add_argument("--input", type=Path, required=True)
     benchmark.add_argument("--output", type=Path, required=True)
-    benchmark.add_argument("--device", type=device_argument, default="cuda:0")
-    compare = commands.add_parser("compare", help="元フレームで揃えた比較動画（未実装）")
+    benchmark.add_argument("--device", type=device_argument, help="割当CUDAデバイスを上書き")
+    benchmark.add_argument(
+        "--warmup", type=bounded_integer(0), default=20, help="ウォームアップ件数"
+    )
+    benchmark.add_argument("--samples", type=bounded_integer(100), default=100, help="本計測件数")
+    compare = commands.add_parser("compare", help="元フレームで揃えた比較動画")
     compare.add_argument("--input-dir", type=Path, required=True)
     compare.add_argument("--output", type=Path, required=True)
+    compare.add_argument("--input", type=Path, help="移動した元動画のパス（SHA256を照合）")
     for command in (doctor, run, live, benchmark, compare):
         command.add_argument("--config", type=Path, help="Git管理外のローカルTOML設定")
     return root
@@ -170,6 +196,13 @@ def execute(args) -> int:
                 )
                 record_worker_failure(args, settings, device, error)
             return code
+        measurement = None
+        if args.benchmark_plan:
+            from hepose.measurement import MeasurementPlan
+
+            if not args.local:
+                raise ValueError("benchmark plan requires the local worker")
+            measurement = MeasurementPlan(**json.loads(args.benchmark_plan.read_text()))
         summary = run_video(
             args.input,
             args.output,
@@ -177,6 +210,7 @@ def execute(args) -> int:
             model_id=args.model,
             device=device,
             configuration=settings,
+            measurement=measurement,
         )
         return 0 if summary["status"] == "success" else 1
     if args.command == "live":
@@ -188,6 +222,28 @@ def execute(args) -> int:
         if summary["error"]:
             print(summary["error"], file=sys.stderr)
         return {"success": 0, "failed": 1, "interrupted": 130}[summary["status"]]
+    if args.command == "benchmark":
+        from hepose.benchmark import run_benchmark
+
+        summary = run_benchmark(
+            args.input,
+            args.output,
+            args.models,
+            configuration,
+            device=args.device,
+            warmup=args.warmup,
+            samples=args.samples,
+        )
+        print(f"benchmark: {summary['status']} / {args.output}")
+        if summary["error"]:
+            print(summary["error"], file=sys.stderr)
+        return {"success": 0, "interrupted": 130}.get(summary["status"], 1)
+    if args.command == "compare":
+        from hepose.compare import compare_video
+
+        count = compare_video(args.input_dir, args.output, source=args.input)
+        print(f"compare: {count} frames / {args.output}")
+        return 0
     print(f"{args.command}: この機能またはモデルアダプタは未実装です。", file=sys.stderr)
     return 1
 

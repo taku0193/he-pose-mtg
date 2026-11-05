@@ -7,9 +7,9 @@ import importlib.metadata
 import os
 from pathlib import Path
 
-from hepose.adapters import Prediction
+from hepose.adapters import MODEL_TEMPORAL, Prediction
 from hepose.runtime import validate_runtime_device as validate_runtime_device
-from hepose.schema import COCO17, Keypoint, Person, TemporalContext, finite, integer
+from hepose.schema import COCO17, Keypoint, Person, finite, integer
 
 ULTRALYTICS_VERSION = "8.4.202"
 TORCH_VERSION = "2.14.1"
@@ -141,7 +141,7 @@ def parse_result(result, width: int, height: int, *, measurement_method=None) ->
 
 class Yolo26Adapter:
     model_id = "yolo26"
-    temporal = TemporalContext()
+    temporal = MODEL_TEMPORAL["yolo26"]
 
     def __init__(self, device: str, settings: dict):
         weights, self.input_size = model_settings(settings)
