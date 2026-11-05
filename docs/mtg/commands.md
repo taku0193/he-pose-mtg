@@ -1,6 +1,6 @@
 # HE姿勢推定　当日のコマンド表
 
-**MacとLinuxのリポジトリ直下で操作。** `YOUR_SSH_ALIAS` とパスは各自の値に置き換えます。GPU番号は割当を確認します。
+**MacとLinuxのリポジトリ直下で操作。** `YOUR_SSH_ALIAS` とパスは各自の値に置き換えます。GPUは `hepose.local.toml` の `device` と `gpu_uuid` で指定します。
 
 ## 1　Macから接続してライブを起動
 
@@ -18,15 +18,17 @@ ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true
 ## 2　Linuxで録画を比較
 
 ```bash
-.venv/bin/python -m hepose.cli doctor --model yolo26
-.venv/bin/python -m hepose.cli doctor --model detrpose
 root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)"
+.venv/bin/python -m hepose.cli doctor --model yolo26 &&
+.venv/bin/python -m hepose.cli doctor --model detrpose &&
 .venv/bin/python -m hepose.cli benchmark --models yolo26,detrpose \
-  --input assets/sample/basic.mp4 --output "$root" --device cuda:0
+  --input assets/sample/basic.mp4 --output "$root" &&
 .venv/bin/python -m hepose.cli compare --input-dir "$root" \
-  --output "$root/comparison.mp4"
+  --output "$root/comparison.mp4" &&
 printf '%s\n' "$root"
 ```
+
+失敗時は端末のエラーを確認します。計測の詳細は `summary.json` と `run.log` に残ります。
 
 ## 3　Macへ持ち帰って再生
 

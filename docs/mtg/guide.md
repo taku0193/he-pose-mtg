@@ -81,22 +81,22 @@ ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true
   --remote "$ssh_alias" --remote-root "$remote_root" --show-fps
 ```
 
-カメラに正面を向け、ゆっくり腕を上げた後、同じ動きを速く繰り返します。表示の更新、腕の追従、待機画像の置換を観察します。`q` で閉じてログの出力先を控え、必要に応じて再起動して Ctrl+C でも終了を確かめます。既定の出力は統計とログです。
+カメラに正面を向け、ゆっくり腕を上げた後、同じ動きを速く繰り返します。表示の更新、腕の追従、待機画像の置換を観察します。`q` で閉じてログの出力先を控え、事前確認では別のセッションで Ctrl+C も試し、受入記録にそれぞれの結果を残します。既定の出力は統計とログです。
 
 ### 40–60分　録画の同じ元フレームを比較する
 
-次はLinux側のリポジトリ直下で実行します。`cuda:0` は例です。割当の設定と異なる場合は、各自の確認済みデバイスを指定します。
+次はLinux側のリポジトリ直下で実行します。`hepose.local.toml` の各モデルに割当GPUの `device` と `gpu_uuid` を設定します。両モデルの計測が成功すると、比較動画を作って出力先を表示します。
 
 ```bash
 root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)"
 .venv/bin/python -m hepose.cli benchmark --models yolo26,detrpose \
-  --input assets/sample/basic.mp4 --output "$root" --device cuda:0
+  --input assets/sample/basic.mp4 --output "$root" &&
 .venv/bin/python -m hepose.cli compare --input-dir "$root" \
-  --output "$root/comparison.mp4"
+  --output "$root/comparison.mp4" &&
 printf '%s\n' "$root"
 ```
 
-Mac側で、表示された出力先をコピーします。`remote_run` には `outputs/...` から始まるパスを入れます。
+計測や比較が失敗した場合は、端末のエラーを確認します。計測の詳細はLinux側の出力先にある `summary.json` と `run.log` に残ります。成功したらMac側で、最後に表示された出力先をコピーします。`remote_run` には `outputs/...` から始まるパスを入れます。
 
 ```bash
 remote_run=outputs/mtg-basic-YYYYMMDD-HHMMSS
@@ -110,12 +110,11 @@ open "${remote_run##*/}/comparison.mp4"
 
 保存済みの `multi` の3モデル比較を開きます。まずTARの冒頭2フレームの **NOT ESTIMATED** を示し、中心フレーム2が0〜4を参照することを `poses.jsonl` で確認します。次に5.40秒（元フレーム135）で一時停止します。abertの保存結果ではYOLO26とDETRPoseが各1人、TARは2人を出力しました。6.00秒（フレーム150）では各2人、2人、3人でした。画面奥にも人が映っているので、人数に加えてどの位置の骨格かを見ます。
 
-代表環境でその場でも実行するときは、Linuxのリポジトリ直下で次を使います。保存済み結果を見る場合は、配布セットの `results/multi/tar-poses.jsonl` でも参照窓を確認できます。
+代表環境でその場でも実行するときは、Linuxのリポジトリ直下で次を使います。GPUはTARのローカル設定に従います。保存済み結果を見る場合は、配布セットの `results/multi/tar-poses.jsonl` でも参照窓を確認できます。
 
 ```bash
 .venv/bin/python -m hepose.cli run --model tar-vitpose \
-  --input assets/sample/multi.mp4 --output "outputs/tar-mtg-$(date +%Y%m%d-%H%M%S)" \
-  --device cuda:0
+  --input assets/sample/multi.mp4 --output "outputs/tar-mtg-$(date +%Y%m%d-%H%M%S)"
 ```
 
 画面の **NO PERSON** は処理した結果が0人、**NOT ESTIMATED** は時間窓の境界などで推定を行えなかった状態です。**FAILED** と **NO SAVED RESULT** は失敗または保存結果の欠落として別に記録します。比較画面での人物順には、追跡IDによる継続性を仮定しません。
