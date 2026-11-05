@@ -64,7 +64,14 @@ Linuxの各割当GPU、GPU UUID、既存のSSH接続先、両端のコミット�
 
 ## 4. 実演台本
 
-参加者は **Macでライブを試す → SSHでLinuxに入って録画を処理する → Macに戻って比較動画を開く** の順で進みます。事前に第3節の準備を済ませておきます。最後に、進行役が保存済みのTARの結果を見せます。
+`ssh abert` で接続済みのタブを開いたまま、第3節の準備を済ませておきます。当日はこの2つのタブを使います。
+
+| タブ | 行う操作 |
+| --- | --- |
+| **abert**（SSH接続済み） | 録画の推論と計測、比較動画の生成 |
+| **Mac**（SSHに入っていない別タブ） | カメラのライブ表示、結果のコピーと再生 |
+
+abert側だけで先に試す場合は、40–60分の録画処理から始められます。別のLinuxを割り当てられた参加者は、接続名とリポジトリの場所を各自の環境に置き換えます。
 
 ### 0–20分　見るポイントを決める
 
@@ -72,32 +79,21 @@ Linuxの各割当GPU、GPU UUID、既存のSSH接続先、両端のコミット�
 
 ### 20–40分　Macでカメラの骨格表示を試す
 
-**Macのターミナル**で、Mac側のリポジトリへ移動します。ホームに置いた場合は `cd ~/he-pose-mtg` です。次の `taku@abert` と `/home/taku/he-pose-mtg` はabertを使う場合の例です。Macから接続できるSSH名と、Linux側のリポジトリの場所に置き換えてください。
+**Macの別タブ**で、Mac側のリポジトリへ移動します。ホームに置いた場合は `cd ~/he-pose-mtg` です。次のコマンドは、Macから `ssh abert` で接続できるSSH設定を使います。
 
 ```bash
-ssh_alias=taku@abert
-remote_root=/home/taku/he-pose-mtg
 .venv/bin/python -m hepose.cli doctor --role client &&
-ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true &&
 .venv/bin/python -m hepose.cli live --model yolo26 --camera 0 \
-  --remote "$ssh_alias" --remote-root "$remote_root" --show-fps
+  --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
 ```
 
-`live` がSSH接続を開き、Linuxで推論します。Macにカメラ画面が出たら、腕をゆっくり上げ、次に同じ動きを速く繰り返します。骨格が腕についてくるかを見て、画面で `q` を押します。Macのターミナルに戻ったら、表示されたログの出力先を控えます。Ctrl+Cなどの事前確認は別のセッションで行います。 [受入記録](acceptance.md)
+`live` がMacからabertへのSSH接続を開き、abertで推論します。Macにカメラ画面が出たら、腕をゆっくり上げ、次に同じ動きを速く繰り返します。骨格が腕についてくるかを見て、画面で `q` を押します。Macのターミナルに戻ったら、表示されたログの出力先を控えます。Ctrl+Cなどの事前確認は別のセッションで行います。 [受入記録](acceptance.md)
 
 ### 40–60分　録画を処理し、Macで比較動画を開く
 
-#### 1. MacからLinuxに入る
+#### 1. 接続済みのabertでYOLO26とDETRPoseを順に実行する
 
-ライブを閉じたあと、**同じMacのターミナル**で次を実行します。端末の入力先がLinuxに切り替わります。
-
-```bash
-ssh "$ssh_alias"
-```
-
-#### 2. LinuxでYOLO26とDETRPoseを順に実行する
-
-**SSHで入った先のLinux**で実行します。`cd` のパスは、Macで `remote_root` に設定した値を使います。GPUは事前に `hepose.local.toml` に記入した各モデルの `device` と `gpu_uuid` で選びます。
+**abertのタブ**へ切り替え、次のコマンドを実行します。GPUは事前に `hepose.local.toml` に記入した各モデルの `device` と `gpu_uuid` で選びます。
 
 ```bash
 cd /home/taku/he-pose-mtg &&
@@ -109,16 +105,17 @@ root="outputs/mtg-basic-$(date +%Y%m%d-%H%M%S)" &&
 printf '%s\n' "$root"
 ```
 
-成功すると最後に `outputs/mtg-basic-20261105-175336` のような行が出ます。**自分の実行で表示されたフォルダ名**を控え、`exit` と入力してMacのターミナルに戻ります。途中でエラーが出たら、端末の表示と、出力先に作られた `summary.json`・`run.log` を確認します。
+成功すると最後に `outputs/mtg-basic-20261105-175336` のような行が出ます。**自分の実行で表示されたフォルダ名**を控え、Macの別タブへ切り替えます。abertのタブは開いたまま使えます。途中でエラーが出たら、端末の表示と、出力先に作られた `summary.json`・`run.log` を確認します。
 
-#### 3. Macへコピーして再生する
+#### 2. Macへコピーして再生する
 
-**Macに戻った同じターミナル**で、`run_name` の値を先ほど控えたフォルダ名に置き換えます。先頭の `outputs/` を除いた `mtg-basic-...` の部分を使います。
+**Macの別タブ**で、`run_name` の値を先ほど控えたフォルダ名に置き換えます。先頭の `outputs/` を除いた `mtg-basic-...` の部分を使います。
 
 ```bash
 run_name=mtg-basic-YYYYMMDD-HHMMSS
-scp -r "$ssh_alias:$remote_root/outputs/$run_name" . &&
-open "$run_name/comparison.mp4"
+mkdir -p outputs &&
+scp -r "abert:/home/taku/he-pose-mtg/outputs/$run_name" outputs/ &&
+open "outputs/$run_name/comparison.mp4"
 ```
 
 腕が前へ伸びるところで動画を止め、左右のパネルに表示された同じ元フレーム番号で、肩・肘・手首を見比べます。コピーしたフォルダには比較動画と計測表、両モデルの実行記録が入っています。 [当日のコマンド表](commands.md)
@@ -132,7 +129,7 @@ open "$run_name/comparison.mp4"
 
 `NO PERSON` は推定した結果が0人、`NOT ESTIMATED` は推定していないフレームです。`FAILED` や `NO SAVED RESULT` が出た場合は、失敗や保存結果の欠落として記録します。
 
-進行役が準備済みのLinux環境でも再実行する場合は、リポジトリ直下で次を使います。
+進行役が再実行する場合は、準備済みのabertのタブでリポジトリ直下に移動して実行します。
 
 ```bash
 .venv/bin/python -m hepose.cli run --model tar-vitpose \

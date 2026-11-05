@@ -4,7 +4,7 @@
 
 ## 共通環境とローカル設定
 
-Python 3.11とuvを用意します。Linuxは `video`、MacのGUIクライアントは `client` を選びます。開発時には `--extra dev` を追加できます。モデルの依存と重みはそれぞれの専用環境へ用意します。共通CLIの固定版と配布ファイルのハッシュは [uv.lock](../uv.lock)、ビルド用setuptoolsの版は [pyproject.toml](../pyproject.toml) を参照してください。
+`ssh abert` で接続済みのタブでは `cd /home/taku/he-pose-mtg` へ移動します。Macでの操作はMacの別タブから行います。Python 3.11とuvを用意します。Linuxは `video`、MacのGUIクライアントは `client` を選びます。開発時には `--extra dev` を追加できます。モデルの依存と重みはそれぞれの専用環境へ用意します。共通CLIの固定版と配布ファイルのハッシュは [uv.lock](../uv.lock)、ビルド用setuptoolsの版は [pyproject.toml](../pyproject.toml) を参照してください。
 
 ```bash
 # Linux
@@ -93,12 +93,13 @@ Macでカメラへのアクセスを求められたら、起動に使うアプ�
 
 `compare` には2種類以上のモデルの保存結果が必要です。比較対象ごとに1実行を指定します。元動画を移動した場合は `--input` で同じSHA256のファイルを指定できます。元の枚数・FPSを保ち、未推定や処理失敗を画面に表示します。
 
-Mac側のターミナルで、`ssh_alias` と `remote_root` を [READMEのライブ手順](../README.md#macからyolo26を遠隔実行する) と同じ値に設定し、`remote_run` を実行結果の出力先へ置き換えます。
+abertのタブで表示された出力先を控え、**Macの別タブ**へ切り替えます。`run_name` に、出力先の先頭の `outputs/` を除いたフォルダ名を入れます。
 
 ```bash
-remote_run=outputs/benchmark-YYYYMMDD-HHMMSS
-scp -r "$ssh_alias:$remote_root/$remote_run" . &&
-open "${remote_run##*/}/comparison.mp4"
+run_name=benchmark-YYYYMMDD-HHMMSS
+mkdir -p outputs &&
+scp -r "abert:/home/taku/he-pose-mtg/outputs/$run_name" outputs/ &&
+open "outputs/$run_name/comparison.mp4"
 ```
 
 ## 動画と結果の契約

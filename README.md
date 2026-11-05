@@ -39,7 +39,7 @@ abertでは3素材の録画推論・同期比較と、LinuxからのSSH録画再
 
 ## セットアップ
 
-Python 3.11とuvを用意し、同じコミットをMacとLinuxに置きます。コマンドは各端末のリポジトリ直下で実行します。
+手順は `ssh abert` で接続済みのタブから始めます。abertでは `cd /home/taku/he-pose-mtg` で作業場所に移動します。Macのカメラ表示とファイル回収には、Macの別タブを使います。各環境にPython 3.11とuvを用意し、同じコミットを使います。
 
 | 端末 | 共通CLIの準備 | 追加の準備 |
 | --- | --- | --- |
@@ -74,27 +74,23 @@ Linuxで[配布素材](docs/mtg/sample-sources.md)の `basic.mp4` を `assets/sa
 
 ## MacからYOLO26を遠隔実行する
 
-Macから既存のSSH鍵とホスト鍵でログインでき、LinuxのSSHサーバーでループバック宛のTCP転送が許可されていることを確認します。Linux側はYOLO26の準備とGPU UUIDの設定を済ませておきます。
+abertに接続済みのタブを開いたまま、**Macの別タブ**でMac側のリポジトリへ移動します。ライブはMacの `abert` SSH設定を使います。abert側では、YOLO26とGPU UUIDの設定、SSHサーバーでのループバック宛TCP転送の許可を済ませておきます。
 
 ```bash
-# Mac側。SSH別名とLinux側の絶対パスを各自の値に置き換える
-ssh_alias=YOUR_SSH_ALIAS
-remote_root=/absolute/path/to/he-pose-mtg
-
 .venv/bin/python -m hepose.cli doctor --role client &&
-ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true &&
 .venv/bin/python -m hepose.cli live --camera 0 \
-  --remote "$ssh_alias" --remote-root "$remote_root" --show-fps
+  --remote abert --remote-root /home/taku/he-pose-mtg --show-fps
 ```
 
 ウィンドウの `q` またはターミナルの Ctrl+C で終了します。出力先の `summary.json` で表示FPS・アプリ内遅延・待機画像の置き換え数を確認できます。動画を保存する場合は `--record` を指定します。[ライブ設定とトラブル時の確認](docs/setup.md#ライブ設定と記録)
 
 ## 3モデルを計測して比較動画を作る
 
-Linuxで3モデルに同じ割当GPUのUUIDを設定し、同じ素材を使います。次の例は計測が成功すると比較動画を作ります。
+**接続済みのabertのタブ**で実行します。3モデルに同じ割当GPUのUUIDを設定し、同じ素材を使います。計測が成功すると比較動画を作ります。
 
 ```bash
-root="outputs/benchmark-$(date +%Y%m%d-%H%M%S)"
+cd /home/taku/he-pose-mtg &&
+root="outputs/benchmark-$(date +%Y%m%d-%H%M%S)" &&
 .venv/bin/python -m hepose.cli benchmark --models yolo26,detrpose,tar-vitpose \
   --input assets/sample/basic.mp4 --output "$root" &&
 .venv/bin/python -m hepose.cli compare --input-dir "$root" \
@@ -102,7 +98,7 @@ root="outputs/benchmark-$(date +%Y%m%d-%H%M%S)"
 printf '%s\n' "$root"
 ```
 
-Macに `scp` で出力フォルダを持ち帰ると、`comparison.mp4` と `report.md` をオフラインで閲覧できます。[回収コマンド](docs/mtg/commands.md) · [比較の条件と出力](docs/setup.md#比較と持ち帰り)
+出力先を控え、**Macの別タブ**から `scp` で回収します。`comparison.mp4` と `report.md` はオフラインで閲覧できます。 [回収コマンドと比較の条件](docs/setup.md#比較と持ち帰り)
 
 ## MTG資料
 

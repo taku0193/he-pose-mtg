@@ -28,9 +28,9 @@ config = "models/tar-vitpose/inference.yaml"
 device = "cuda:0"
 # gpu_uuid = "GPU-YOUR-ASSIGNED-UUID"
 
-# These are placeholders, not verified Mac SSH settings. Remote paths remain remote paths.
+# Use this example on a Mac where ssh abert already works.
 [live]
-remote = "YOUR_SSH_ALIAS"
+remote = "abert"
 remote_root = "/home/taku/he-pose-mtg"
 remote_python = ".venv-yolo26/bin/python"
 remote_config = "hepose.local.toml"
