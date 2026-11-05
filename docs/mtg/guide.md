@@ -173,7 +173,7 @@ open "outputs/$run_name/comparison.mp4"
 
 比較動画は3つのモデルを左からYOLO26、DETRPose、TARの順に表示します。たとえば `fast` の元フレーム374では、YOLO26は0人、DETRPoseは人物を推定し、TARは時間窓の境界で未推定でした。各ラベルが示す処理状態の違いを、同じ元画像で確認できます。 [実測条件と集計](../pr-notes/benchmark.md)
 
-`basic` と `multi` でも、3モデルを同じ100件で順次測定し、各300フレームを揃えた比較動画を作りました。素材別の `benchmark.csv` と比較MP4を配布フォルダで確認できます。 [3素材の実行記録](../experiments/mtg-abert-2026-11-05.json)
+`basic` と `multi` でも、3モデルを同じ100件で順次測定し、各300フレームを揃えた比較動画を作りました。素材別の `benchmark.csv` と比較MP4を配布フォルダで確認できます。 [3モデルの比較分析とCSV](../experiments/pose-analysis-2026-11-05/README.md) · [3素材の実行記録](../experiments/mtg-abert-2026-11-05.json)
 
 ### ライブの準備状況
 
