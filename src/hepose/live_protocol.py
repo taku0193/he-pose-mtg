@@ -68,14 +68,14 @@ class Channel:
         header = json.dumps(message, allow_nan=False, separators=(",", ":")).encode()
         if not 0 < len(header) <= MAX_JSON or len(payload) > MAX_JPEG:
             raise ProtocolError("live packet exceeds size limit")
-        for part in (HEADER.pack(len(header), len(payload)), header, payload):
-            data = memoryview(part)
-            while data:
-                self._wait(self.write_fd, deadline, write=True)
-                try:
-                    data = data[os.write(self.write_fd, data) :]
-                except BlockingIOError:
-                    continue
+        # Write the prefix and body together so tiny TCP writes do not delay the reply.
+        data = memoryview(HEADER.pack(len(header), len(payload)) + header + payload)
+        while data:
+            self._wait(self.write_fd, deadline, write=True)
+            try:
+                data = data[os.write(self.write_fd, data) :]
+            except BlockingIOError:
+                continue
 
     def receive(self, *, timeout):
         deadline = monotonic() + timeout

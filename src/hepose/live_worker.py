@@ -143,6 +143,7 @@ def main(argv=None):
             os.dup2(2, 1)
             with listener.accept()[0] as connection:
                 listener.close()
+                connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 serve_session(
                     Channel(connection.fileno(), connection.fileno()),
                     token,

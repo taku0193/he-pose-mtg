@@ -13,7 +13,6 @@ from uuid import uuid4
 from hepose.config import validate_device
 from hepose.environment import collect_environment
 from hepose.live_capture import Capture
-from hepose.live_capture import LatestFrame as LatestFrame
 from hepose.live_protocol import WIRE, ProtocolError, check_size, validate_reply
 from hepose.live_ssh import SshSession
 from hepose.render import draw_poses
@@ -109,11 +108,9 @@ def live_options(args, config):
     record, show_fps, headless = (value(name, False) for name in ("record", "show_fps", "headless"))
     if any(type(flag) is not bool for flag in (record, show_fps, headless)):
         raise ValueError("record, show_fps and headless must be booleans")
-    video = value("video")
+    video = value("video") if getattr(args, "camera", None) is None else None
     if headless and not video:
         raise ValueError("--headless requires --video")
-    if getattr(args, "camera", None) is not None and video:
-        raise ValueError("--camera and --video are mutually exclusive")
     note = value("network_note")
     if note is not None and not isinstance(note, str):
         raise ValueError("network_note must be a string")
@@ -201,6 +198,20 @@ class Exchange:
             self.result.set_exception(ProtocolError("SSH stream closed before the frame result"))
         except Exception as exc:
             self.result.set_exception(exc)
+
+
+def _draw_metrics(cv2, image, fps, previous_latency, inference, replaced):
+    def ms(value):
+        return f"{value:.1f} ms" if value is not None else "--"
+
+    labels = (
+        f"Display: {fps:.1f} fps | Replaced: {replaced}",
+        f"App (previous): {ms(previous_latency)} | Inference: {ms(inference)}",
+    )
+    for index, label in enumerate(labels):
+        position = (6, 34 + 18 * index)
+        for color, weight in (((0, 0, 0), 3), ((255, 255, 255), 1)):
+            cv2.putText(image, label, position, cv2.FONT_HERSHEY_SIMPLEX, 0.46, color, weight)
 
 
 def run_live(options):
@@ -320,14 +331,14 @@ def _run(options, log, stream):
                 )
                 if window_open and options.show_fps:
                     fps = throughput(counts["displayed"], (rendered_at - active_ns) / 1e6)
-                    cv2.putText(
+                    latencies = samples["display_latency_ms"]
+                    _draw_metrics(
+                        cv2,
                         image,
-                        f"Display: {fps or 0:.1f} fps",
-                        (12, 25),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.65,
-                        (255, 255, 255),
-                        2,
+                        fps or 0,
+                        latencies[-1] if latencies else None,
+                        row["worker_inference_ms"],
+                        capture.slot.counts()[1],
                     )
                 before_display = perf_counter_ns()
                 row.update(
