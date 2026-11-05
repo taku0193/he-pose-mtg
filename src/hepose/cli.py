@@ -55,13 +55,35 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--output", type=Path, required=True)
     run.add_argument("--device", type=device_argument)
     run.add_argument("--local", action="store_true", help=argparse.SUPPRESS)
-    live = commands.add_parser("live", help="Macからの遠隔ライブ（未実装）")
-    live.add_argument("--model", choices=MODEL_IDS, required=True)
-    live.add_argument("--camera", type=int, default=0)
-    live.add_argument("--remote", required=True)
-    live.add_argument("--remote-root", required=True)
-    live.add_argument("--device", type=device_argument, default="cuda:0")
-    live.add_argument("--show-fps", action="store_true")
+    live = commands.add_parser("live", help="YOLO26のSSH遠隔ライブ")
+    live.add_argument("--model", choices=("yolo26",), default="yolo26")
+    source = live.add_mutually_exclusive_group()
+    source.add_argument("--camera", type=int, help="カメラ番号（既定0）")
+    source.add_argument("--video", type=Path, help="録画素材を指定FPSで再生して検証")
+    live.add_argument("--remote", help="既存のSSH接続先")
+    live.add_argument("--remote-root", help="Linux側のリポジトリの絶対パス")
+    live.add_argument("--remote-python", help="Linux側のPython（既定 .venv-yolo26/bin/python）")
+    live.add_argument("--remote-config", help="Linux側のTOML（既定 hepose.local.toml）")
+    live.add_argument("--device", type=device_argument, help="Linux側のCUDA設定を上書き")
+    live.add_argument("--width", type=int, help="カメラに要求する幅（既定640）")
+    live.add_argument("--height", type=int, help="カメラに要求する高さ（既定480）")
+    live.add_argument("--fps", type=float, help="要求するカメラFPS／録画素材の再生FPS（既定25）")
+    live.add_argument("--jpeg-quality", type=int, help="JPEG品質（既定80）")
+    live.add_argument("--connect-timeout", type=int, help="SSH接続の期限・秒（既定5）")
+    live.add_argument("--startup-timeout", type=int, help="モデル起動を含む期限・秒（既定45）")
+    live.add_argument(
+        "--io-timeout", type=int, help="フレーム応答とワーカー待機の期限・秒（既定15）"
+    )
+    live.add_argument("--session-timeout", type=int, help="セッションの上限・秒（既定1800）")
+    live.add_argument("--limit", type=int, help="取得する最大フレーム数")
+    live.add_argument("--network-note", help="ネットワーク条件の測定メモ")
+    live.add_argument("--output", type=Path, help="新しい出力先（既定 outputs/live-<ID>）")
+    for name, help_text in (
+        ("record", "骨格を描画したMP4を保存"),
+        ("show-fps", "画面に表示FPSを表示"),
+        ("headless", "画面を開かない検証（--videoが必要）"),
+    ):
+        live.add_argument(f"--{name}", action=argparse.BooleanOptionalAction, help=help_text)
     benchmark = commands.add_parser("benchmark", help="モデル別の順次計測（未実装）")
     benchmark.add_argument("--models", required=True)
     benchmark.add_argument("--input", type=Path, required=True)
@@ -157,6 +179,15 @@ def execute(args) -> int:
             configuration=settings,
         )
         return 0 if summary["status"] == "success" else 1
+    if args.command == "live":
+        from hepose.live import live_options, run_live
+
+        options = live_options(args, configuration.live)
+        summary = run_live(options)
+        print(f"live: {summary['status']} / {options.output}")
+        if summary["error"]:
+            print(summary["error"], file=sys.stderr)
+        return {"success": 0, "failed": 1, "interrupted": 130}[summary["status"]]
     print(f"{args.command}: この機能またはモデルアダプタは未実装です。", file=sys.stderr)
     return 1
 

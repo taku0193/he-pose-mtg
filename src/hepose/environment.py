@@ -10,7 +10,7 @@ from pathlib import Path
 from hepose import __version__
 
 
-def collect_environment(input_path: Path, model_id: str, device: str) -> dict:
+def source_revision() -> dict:
     project = Path(__file__).resolve().parents[2]
 
     def git(*args):
@@ -22,6 +22,14 @@ def collect_environment(input_path: Path, model_id: str, device: str) -> dict:
         except (OSError, subprocess.TimeoutExpired):
             return None
 
+    dirty = git("status", "--porcelain")
+    return {
+        "git_commit": git("rev-parse", "HEAD"),
+        "dirty": bool(dirty) if dirty is not None else None,
+    }
+
+
+def collect_environment(input_path: Path | None, model_id: str, device: str | None) -> dict:
     versions = {}
     for name in ("numpy", "opencv-python-headless", "opencv-python", "torch", "ultralytics"):
         try:
@@ -29,20 +37,16 @@ def collect_environment(input_path: Path, model_id: str, device: str) -> dict:
         except importlib.metadata.PackageNotFoundError:
             versions[name] = None
     digest = None
-    if input_path.is_file():
+    if input_path is not None and input_path.is_file():
         with input_path.open("rb") as stream:
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
-    dirty = git("status", "--porcelain")
     return {
         "application_version": __version__,
         "python": platform.python_version(),
         "python_executable": sys.executable,
         "platform": platform.platform(),
-        "source": {
-            "git_commit": git("rev-parse", "HEAD"),
-            "dirty": bool(dirty) if dirty is not None else None,
-        },
-        "input": {"path": str(input_path.resolve()), "sha256": digest},
+        "source": source_revision(),
+        "input": {"path": str(input_path.resolve()), "sha256": digest} if input_path else None,
         "model_id": model_id,
         "requested_device": device,
         "device": None,
