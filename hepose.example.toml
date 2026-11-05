@@ -7,7 +7,7 @@ python = ".venv-yolo26/bin/python"
 weights = "models/yolo26/yolo26n-pose.pt"
 device = "cuda:0"
 input_size = 640
-# Optional: check the UUID of your assigned GPU (not another participant's GPU).
+# Required for live; use only your assigned GPU UUID.
 # gpu_uuid = "GPU-YOUR-ASSIGNED-UUID"
 
 [models.detrpose]
@@ -32,5 +32,18 @@ device = "cuda:0"
 [live]
 remote = "YOUR_SSH_ALIAS"
 remote_root = "/home/taku/he-pose-mtg"
-remote_python = "/absolute/path/to/yolo-environment/bin/python"
+remote_python = ".venv-yolo26/bin/python"
+remote_config = "hepose.local.toml"
 camera = 0
+width = 640
+height = 480
+fps = 25
+jpeg_quality = 80
+connect_timeout = 5
+startup_timeout = 45
+io_timeout = 15
+session_timeout = 1800
+record = false
+# Use a new output directory when setting a fixed path.
+# output = "outputs/my-live-run"
+# network_note = "Mac on lab Wi-Fi; worker on wired LAN"

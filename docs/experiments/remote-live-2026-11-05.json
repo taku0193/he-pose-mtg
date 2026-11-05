@@ -1,0 +1,573 @@
+{
+  "date": "2026-11-05",
+  "purpose": "GPU/SSH replay and cleanup verification",
+  "scope": {
+    "client_and_worker": "same Linux host (abert)",
+    "camera": false,
+    "gui": false,
+    "mac_acceptance": false,
+    "formal_benchmark": false
+  },
+  "runs": {
+    "final": {
+      "output": "outputs/live-ssh-final",
+      "run_id": "74eefd586b9e402487875404a3712f3d",
+      "client_exit": 0,
+      "worker_ssh_exit": 0,
+      "worker_pid_gone": true,
+      "source": {
+        "git_commit": "0af7c37337a9c8260224ece81208e2b095d84c57",
+        "dirty": false
+      },
+      "configuration": {
+        "fps": 25.0,
+        "jpeg_quality": 80,
+        "limit": null,
+        "connect_timeout": 5,
+        "startup_timeout": 45,
+        "io_timeout": 15,
+        "session_timeout": 1800,
+        "record": true,
+        "network_note": "Linux client and GPU worker on abert; same host via authenticated OpenSSH, no Mac/Wi-Fi"
+      },
+      "capture": {
+        "backend": "FFMPEG",
+        "reported_fps": 25.0,
+        "observed_sizes": [
+          [
+            640,
+            480
+          ]
+        ],
+        "observed_capture_fps": 25.01221257727363,
+        "camera_internal_drops": null
+      },
+      "startup_ms": 1382.9494859965052,
+      "model_load_ms": 991.071283,
+      "status": "success",
+      "error": null,
+      "counts": {
+        "dispatched": 369,
+        "sent": 369,
+        "received": 369,
+        "rendered": 369,
+        "displayed": 0,
+        "recorded": 369,
+        "acquired": 375,
+        "replaced": 6,
+        "pending_at_stop": 0,
+        "dispatched_not_sent": 0,
+        "sent_without_result": 0,
+        "sent_without_display": null
+      },
+      "result_fps": 24.58871572526914,
+      "display_fps": null,
+      "timing": {
+        "encode_ms": {
+          "count": 369,
+          "mean_ms": 2.078291620596208,
+          "p50_ms": 2.293589,
+          "p95_ms": 2.4187506
+        },
+        "round_trip_ms": {
+          "count": 369,
+          "mean_ms": 24.29528092140919,
+          "p50_ms": 18.067372,
+          "p95_ms": 44.929797799999996
+        },
+        "worker_decode_ms": {
+          "count": 369,
+          "mean_ms": 2.319412940379406,
+          "p50_ms": 2.482941,
+          "p95_ms": 2.5264554
+        },
+        "worker_adapter_ms": {
+          "count": 369,
+          "mean_ms": 12.972052365853662,
+          "p50_ms": 13.220153,
+          "p95_ms": 15.386299
+        },
+        "worker_inference_ms": {
+          "count": 369,
+          "mean_ms": 9.651150997680155,
+          "p50_ms": 10.541558003751561,
+          "p95_ms": 12.530948600033298
+        },
+        "render_ms": {
+          "count": 369,
+          "mean_ms": 0.24376654742547424,
+          "p50_ms": 0.180285,
+          "p95_ms": 0.48330999999999996
+        },
+        "capture_to_render_ms": {
+          "count": 369,
+          "mean_ms": 32.86411621409215,
+          "p50_ms": 33.267547,
+          "p95_ms": 50.8880408
+        },
+        "display_latency_ms": {
+          "count": 0,
+          "mean_ms": null,
+          "p50_ms": null,
+          "p95_ms": null
+        }
+      },
+      "first_result_frame": 0,
+      "last_result_frame": 374,
+      "frames_with_people": 331
+    },
+    "overload": {
+      "output": "outputs/live-ssh-overload",
+      "run_id": "9ee1beef8a804713931144f477820e17",
+      "client_exit": 0,
+      "worker_ssh_exit": 0,
+      "worker_pid_gone": true,
+      "source": {
+        "git_commit": "0af7c37337a9c8260224ece81208e2b095d84c57",
+        "dirty": false
+      },
+      "configuration": {
+        "fps": 120.0,
+        "jpeg_quality": 80,
+        "limit": 200,
+        "connect_timeout": 5,
+        "startup_timeout": 45,
+        "io_timeout": 15,
+        "session_timeout": 1800,
+        "record": false,
+        "network_note": "Same-host SSH replay at 120 fps to overload the waiting slot"
+      },
+      "capture": {
+        "backend": "FFMPEG",
+        "reported_fps": 25.0,
+        "observed_sizes": [
+          [
+            640,
+            480
+          ]
+        ],
+        "observed_capture_fps": 120.51530790467523,
+        "camera_internal_drops": null
+      },
+      "startup_ms": 1319.100830995012,
+      "model_load_ms": 910.152354,
+      "status": "success",
+      "error": null,
+      "counts": {
+        "dispatched": 59,
+        "sent": 59,
+        "received": 59,
+        "rendered": 59,
+        "displayed": 0,
+        "recorded": 0,
+        "acquired": 200,
+        "replaced": 141,
+        "pending_at_stop": 0,
+        "dispatched_not_sent": 0,
+        "sent_without_result": 0,
+        "sent_without_display": null
+      },
+      "result_fps": 34.598642740399455,
+      "display_fps": null,
+      "timing": {
+        "encode_ms": {
+          "count": 59,
+          "mean_ms": 1.1682258644067798,
+          "p50_ms": 0.930794,
+          "p95_ms": 2.3565601999999997
+        },
+        "round_trip_ms": {
+          "count": 59,
+          "mean_ms": 25.865564169491524,
+          "p50_ms": 18.569248,
+          "p95_ms": 43.8717934
+        },
+        "worker_decode_ms": {
+          "count": 59,
+          "mean_ms": 1.3726590338983051,
+          "p50_ms": 1.098245,
+          "p95_ms": 2.5351198999999998
+        },
+        "worker_adapter_ms": {
+          "count": 59,
+          "mean_ms": 12.884670033898304,
+          "p50_ms": 6.154745,
+          "p95_ms": 14.9050054
+        },
+        "worker_inference_ms": {
+          "count": 59,
+          "mean_ms": 6.113682305282455,
+          "p50_ms": 4.4250670180190355,
+          "p95_ms": 12.035972814192064
+        },
+        "render_ms": {
+          "count": 59,
+          "mean_ms": 0.2651122711864406,
+          "p50_ms": 0.186475,
+          "p95_ms": 0.5542871999999999
+        },
+        "capture_to_render_ms": {
+          "count": 59,
+          "mean_ms": 33.030297389830515,
+          "p50_ms": 24.845866,
+          "p95_ms": 51.4582997
+        },
+        "display_latency_ms": {
+          "count": 0,
+          "mean_ms": null,
+          "p50_ms": null,
+          "p95_ms": null
+        }
+      },
+      "first_result_frame": 1,
+      "last_result_frame": 199,
+      "frames_with_people": 55
+    },
+    "final-disconnect": {
+      "output": "outputs/live-ssh-final-disconnect",
+      "run_id": "b652c5bd07dc4c859dfe02c50c3bd10b",
+      "client_exit": 1,
+      "worker_ssh_exit": 0,
+      "worker_pid_gone": true,
+      "source": {
+        "git_commit": "0af7c37337a9c8260224ece81208e2b095d84c57",
+        "dirty": true
+      },
+      "configuration": {
+        "fps": 25.0,
+        "jpeg_quality": 80,
+        "limit": null,
+        "connect_timeout": 5,
+        "startup_timeout": 45,
+        "io_timeout": 15,
+        "session_timeout": 1800,
+        "record": false,
+        "network_note": "Linux client and GPU worker on abert; disconnect fault injection"
+      },
+      "capture": {
+        "backend": "FFMPEG",
+        "reported_fps": 25.0,
+        "observed_sizes": [
+          [
+            640,
+            480
+          ]
+        ],
+        "observed_capture_fps": 25.51347281454427,
+        "camera_internal_drops": null
+      },
+      "startup_ms": 1401.5317980083637,
+      "model_load_ms": 1016.954747,
+      "status": "failed",
+      "error": "ProtocolError: SSH stream closed before the frame result",
+      "counts": {
+        "dispatched": 4,
+        "sent": 4,
+        "received": 3,
+        "rendered": 3,
+        "displayed": 0,
+        "recorded": 0,
+        "acquired": 10,
+        "replaced": 6,
+        "pending_at_stop": 0,
+        "dispatched_not_sent": 0,
+        "sent_without_result": 1,
+        "sent_without_display": null
+      },
+      "result_fps": 7.892297644441432,
+      "display_fps": null,
+      "timing": {
+        "encode_ms": {
+          "count": 3,
+          "mean_ms": 0.6078533333333334,
+          "p50_ms": 0.579225,
+          "p95_ms": 0.7010004
+        },
+        "round_trip_ms": {
+          "count": 3,
+          "mean_ms": 110.30056,
+          "p50_ms": 41.605365,
+          "p95_ms": 258.63060989999997
+        },
+        "worker_decode_ms": {
+          "count": 3,
+          "mean_ms": 0.89276,
+          "p50_ms": 0.863341,
+          "p95_ms": 0.9530332
+        },
+        "worker_adapter_ms": {
+          "count": 3,
+          "mean_ms": 97.22025900000001,
+          "p50_ms": 6.074295,
+          "p95_ms": 253.3049934
+        },
+        "worker_inference_ms": {
+          "count": 3,
+          "mean_ms": 3.634486987721175,
+          "p50_ms": 3.434095997363329,
+          "p95_ms": 4.1484331915853545
+        },
+        "render_ms": {
+          "count": 3,
+          "mean_ms": 0.36690533333333325,
+          "p50_ms": 0.323331,
+          "p95_ms": 0.46040369999999997
+        },
+        "capture_to_render_ms": {
+          "count": 3,
+          "mean_ms": 117.275263,
+          "p50_ms": 45.027296,
+          "p95_ms": 261.2430872
+        },
+        "display_latency_ms": {
+          "count": 0,
+          "mean_ms": null,
+          "p50_ms": null,
+          "p95_ms": null
+        }
+      },
+      "first_result_frame": 0,
+      "last_result_frame": 8,
+      "frames_with_people": 3
+    },
+    "final-sigint": {
+      "output": "outputs/live-ssh-final-sigint",
+      "run_id": "32602fe56b114ae1aeb83c0ba0f32db7",
+      "client_exit": 130,
+      "worker_ssh_exit": 0,
+      "worker_pid_gone": true,
+      "source": {
+        "git_commit": "0af7c37337a9c8260224ece81208e2b095d84c57",
+        "dirty": true
+      },
+      "configuration": {
+        "fps": 25.0,
+        "jpeg_quality": 80,
+        "limit": null,
+        "connect_timeout": 5,
+        "startup_timeout": 45,
+        "io_timeout": 15,
+        "session_timeout": 1800,
+        "record": false,
+        "network_note": "Linux client and GPU worker on abert; sigint fault injection"
+      },
+      "capture": {
+        "backend": "FFMPEG",
+        "reported_fps": 25.0,
+        "observed_sizes": [
+          [
+            640,
+            480
+          ]
+        ],
+        "observed_capture_fps": 25.64652561516419,
+        "camera_internal_drops": null
+      },
+      "startup_ms": 1339.0310349932406,
+      "model_load_ms": 902.394083,
+      "status": "interrupted",
+      "error": "KeyboardInterrupt: ",
+      "counts": {
+        "dispatched": 4,
+        "sent": 4,
+        "received": 3,
+        "rendered": 3,
+        "displayed": 0,
+        "recorded": 0,
+        "acquired": 10,
+        "replaced": 6,
+        "pending_at_stop": 0,
+        "dispatched_not_sent": 0,
+        "sent_without_result": 1,
+        "sent_without_display": null
+      },
+      "result_fps": 8.047793895011154,
+      "display_fps": null,
+      "timing": {
+        "encode_ms": {
+          "count": 3,
+          "mean_ms": 0.5696406666666666,
+          "p50_ms": 0.598681,
+          "p95_ms": 0.5997583
+        },
+        "round_trip_ms": {
+          "count": 3,
+          "mean_ms": 111.47526866666665,
+          "p50_ms": 43.718777,
+          "p95_ms": 260.1872747
+        },
+        "worker_decode_ms": {
+          "count": 3,
+          "mean_ms": 0.8248113333333333,
+          "p50_ms": 0.830079,
+          "p95_ms": 0.9319238999999999
+        },
+        "worker_adapter_ms": {
+          "count": 3,
+          "mean_ms": 97.510221,
+          "p50_ms": 5.364798,
+          "p95_ms": 254.6987163
+        },
+        "worker_inference_ms": {
+          "count": 3,
+          "mean_ms": 3.4428920092371604,
+          "p50_ms": 3.4611519949976355,
+          "p95_ms": 3.6657184187788516
+        },
+        "render_ms": {
+          "count": 3,
+          "mean_ms": 0.38658866666666664,
+          "p50_ms": 0.333686,
+          "p95_ms": 0.4828367
+        },
+        "capture_to_render_ms": {
+          "count": 3,
+          "mean_ms": 120.03254033333333,
+          "p50_ms": 46.91078,
+          "p95_ms": 263.46477680000004
+        },
+        "display_latency_ms": {
+          "count": 0,
+          "mean_ms": null,
+          "p50_ms": null,
+          "p95_ms": null
+        }
+      },
+      "first_result_frame": 0,
+      "last_result_frame": 8,
+      "frames_with_people": 3
+    },
+    "expiry": {
+      "output": "outputs/live-ssh-expiry",
+      "run_id": "e1a85afc6a9a44af881334fc14a1e4f6",
+      "client_exit": 1,
+      "worker_ssh_exit": 255,
+      "worker_pid_gone": true,
+      "source": {
+        "git_commit": "0af7c37337a9c8260224ece81208e2b095d84c57",
+        "dirty": true
+      },
+      "configuration": {
+        "fps": 25,
+        "jpeg_quality": 80,
+        "limit": null,
+        "connect_timeout": 2,
+        "startup_timeout": 4,
+        "io_timeout": 3,
+        "session_timeout": 5,
+        "record": false,
+        "network_note": "Same-host SSH; 5-second worker deadline for expiry check"
+      },
+      "capture": {
+        "backend": "FFMPEG",
+        "reported_fps": 25.0,
+        "observed_sizes": [
+          [
+            640,
+            480
+          ]
+        ],
+        "observed_capture_fps": 25.0509474099608,
+        "camera_internal_drops": null
+      },
+      "startup_ms": 1404.3274059949908,
+      "model_load_ms": 1014.213796,
+      "status": "failed",
+      "error": "ProtocolError: SSH stream closed before the frame result",
+      "counts": {
+        "dispatched": 90,
+        "sent": 90,
+        "received": 89,
+        "rendered": 89,
+        "displayed": 0,
+        "recorded": 0,
+        "acquired": 97,
+        "replaced": 6,
+        "pending_at_stop": 1,
+        "dispatched_not_sent": 0,
+        "sent_without_result": 1,
+        "sent_without_display": null
+      },
+      "result_fps": 23.113061897395244,
+      "display_fps": null,
+      "timing": {
+        "encode_ms": {
+          "count": 89,
+          "mean_ms": 2.253329786516854,
+          "p50_ms": 2.32712,
+          "p95_ms": 2.5013984
+        },
+        "round_trip_ms": {
+          "count": 89,
+          "mean_ms": 28.516296887640458,
+          "p50_ms": 18.669965,
+          "p95_ms": 44.4822154
+        },
+        "worker_decode_ms": {
+          "count": 89,
+          "mean_ms": 2.4468116629213483,
+          "p50_ms": 2.499543,
+          "p95_ms": 2.5430212
+        },
+        "worker_adapter_ms": {
+          "count": 89,
+          "mean_ms": 15.838636539325844,
+          "p50_ms": 13.332828,
+          "p95_ms": 15.020932599999998
+        },
+        "worker_inference_ms": {
+          "count": 89,
+          "mean_ms": 10.02657146152538,
+          "p50_ms": 10.606957017444074,
+          "p95_ms": 12.106971797766164
+        },
+        "render_ms": {
+          "count": 89,
+          "mean_ms": 0.25648313483146074,
+          "p50_ms": 0.174867,
+          "p95_ms": 0.490649
+        },
+        "capture_to_render_ms": {
+          "count": 89,
+          "mean_ms": 36.40487123595505,
+          "p50_ms": 32.308277,
+          "p95_ms": 50.5352614
+        },
+        "display_latency_ms": {
+          "count": 0,
+          "mean_ms": null,
+          "p50_ms": null,
+          "p95_ms": null
+        }
+      },
+      "first_result_frame": 0,
+      "last_result_frame": 94,
+      "frames_with_people": 86
+    }
+  },
+  "input": {
+    "name": "jumping-jacks-validation.mp4",
+    "sha256": "67d48a46e86fe66e8d096761f0c23098097855b2d04a94a8d88bf14d00d16642",
+    "provenance": "docs/validation-assets/jumping-jacks.json"
+  },
+  "worker_model": {
+    "model_id": "yolo26",
+    "architecture": "YOLO26n-Pose",
+    "gpu": {
+      "device": "cuda:0",
+      "gpu_uuid": "GPU-25e750aa-24f4-8a0d-edb2-f2f948526eec",
+      "gpu_name": "NVIDIA GeForce RTX 3090",
+      "memory_total_bytes": 25286672384
+    },
+    "input_size": [
+      640,
+      640
+    ],
+    "precision": "float32",
+    "packages": {
+      "ultralytics": "8.4.202",
+      "torch": "2.14.1+cu126",
+      "torchvision": "0.29.1+cu126"
+    }
+  }
+}

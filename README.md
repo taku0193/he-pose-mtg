@@ -12,7 +12,7 @@ Macのカメラ映像をSSH先LinuxのRTX 3090で推論し、結果をMacに表�
 
 ## 現在の状態
 
-2026-11-04：確定仕様はv1.4。ユーザーの許可によりGitHubは公開で管理します。3モデルの録画動画推論を実装し、abertのGPU 0（RTX 3090）で同じ15秒・375フレームの運動動画を検証しました。TARは371フレームを処理し、前後2枚ずつの未推定区間を含め375枚を保存します。必須6出力と元フレーム対応を確認済みです。遠隔ライブ、ベンチマーク、比較動画、MTGガイド、3人全員の実機受入は未完了です。
+2026-11-05：確定仕様はv1.4。3モデルの録画動画推論とYOLO26遠隔ライブを実装しました。abertのRTX 3090で同じ15秒・375フレームの運動動画を3モデルで検証済みです。遠隔ライブも同じ動画をLinuxからSSHで送り、GPU推論・元フレームへの描画・終了処理を確認しました。Mac実機のカメラと表示、ベンチマーク、比較動画、MTGガイド、3人全員の受入は未完了です。
 
 MTG資料はGoogleドキュメントのような章立ての文書とし、Markdown原稿を管理します。作業先はLinuxホストabertの`/home/taku/he-pose-mtg`です。YOLOの再現条件・実行記録・制限は[検証記録](docs/pr-notes/yolo26-pose.md)を参照してください。
 
@@ -24,7 +24,7 @@ MTG資料はGoogleドキュメントのような章立ての文書とし、Markd
 
 重み・大容量動画・認証情報はGit管理対象外です。公式ベンチマークと自前の実測値を区別します。
 
-最新のチャットの依頼範囲を優先します。共通基盤の次は、モデル別ブランチで公式モデルへの対応を進めます。通常実行はローカルに準備済みの重みを使い、不足時に自動取得しない方針です。
+通常実行はローカルに準備済みの重みを使い、不足時に自動取得しません。遠隔ライブの次は、同一素材・同一GPUでの測定と元フレームを揃えた比較です。
 
 ## 開発環境の準備
 
@@ -67,7 +67,7 @@ hepose.example.tomlをhepose.local.tomlへコピーし、実際に準備したPy
   --input assets/sample/jumping-jacks-validation.mp4 --output outputs/yolo26 --device cuda:0
 ```
 
-3モデルのrunは実装済みです。全モデルを準備したabertではdoctor --model allがready=trueです。未準備の環境では不足を報告して終了コード1です。live・benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
+3モデルのrunは実装済みです。全モデルを準備したabertではdoctor --model allがready=trueです。未準備の環境では不足を報告して終了コード1です。liveはYOLO26専用です。benchmark・compareはhelpのみの段階で、実行すると未実装を明示して終了します。
 
 ## YOLO26n-Poseの準備とGPU検証
 
@@ -108,6 +108,30 @@ python3 scripts/prepare_detrpose.py
 公式inference_onlyのコミット、Hugging Face上の重みの版・SHA256、Apache-2.0ライセンスは[モデル記録](docs/model-manifests/detrpose.json)に固定しています。専用環境の依存はenvironments/detrpose/uv.lockに記録します。公式配布のsafetensorsをローカルで厳密に読み込むため、読み込み箇所のみ[パッチ](patches/detrpose/local-safetensors.patch)を適用します。モデル計算・前処理・後処理は公式実装を使います。
 
 DETRPose-Nでは人物の矩形、関節confidence、visibilityが得られないため共通JSONはnullです。人物scoreで0.5を超えるものを採用し、そのscoreを関節confidenceへ転用しません。入力サイズは固定設定に合わせ640×640です。公式画像APIと共通アダプタの座標の一致、運動動画375/375フレームの出力を確認しました。詳細は[検証記録](docs/pr-notes/detrpose.md)にあります。
+
+## MacからYOLO26を遠隔実行する
+
+MacとLinuxで同じコミットをチェックアウトしてください。Linuxは[YOLO26の準備](#yolo26n-poseの準備とgpu検証)を済ませ、`hepose.local.toml`の`[models.yolo26]`に割当GPUの`gpu_uuid`、`device`、重みのパスを指定します。SSHは既存の鍵とホスト鍵を使います。Macからパスワード入力なしで接続でき、SSHサーバーでループバック宛のTCP転送が許可されていることが必要です。
+
+```bash
+# Mac側。値は各自のSSH設定に合わせる。
+ssh_alias=YOUR_SSH_ALIAS
+remote_root=/home/taku/he-pose-mtg
+
+uv sync --frozen --extra client
+.venv/bin/python -m hepose.cli doctor --role client
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$ssh_alias" true
+.venv/bin/python -m hepose.cli live --camera 0 \
+  --remote "$ssh_alias" --remote-root "$remote_root" --show-fps
+```
+
+macOSから求められたら、起動に使ったターミナル等にカメラの使用を許可してください。画面で `q`、またはターミナルで Ctrl+C を押すと終了します。接続に失敗した場合は出力先の `run.log` を確認してください。
+
+既定はカメラ0、要求640×480・25 FPS、JPEG品質80、SSH接続5秒・起動45秒・応答15秒・セッション最大30分です。実際の取得サイズ・FPSは `environment.json` で確認できます。YOLO26の入力サイズはLinux側のモデル設定（既定640）で変更できます。よく使う接続先・タイムアウト等は[設定例](hepose.example.toml)の `[live]` へ書けます。
+
+出力先は新規の `outputs/live-<ID>/` です。既定で保存するのは `summary.json`、`environment.json`、`timings.csv`、`run.log` です。`--record` を指定すると描画済みのフレームを固定FPSのMP4にも保存します。置き換えたフレームは含まず、実際の取得間隔はCSVに残ります。`--show-fps` は表示FPS、直前のアプリ内遅延、推論時間、待機画像の置き換え数を表示します。
+
+カメラがない環境では `--camera 0` を `--video 動画のパス --headless` に置き換えると、同じ通信と描画処理をGUIなしで検証できます。この場合、表示FPSと表示遅延は未測定です。[abertでの検証記録](docs/pr-notes/remote-live.md)を参照してください。
 
 ## TAR-ViTPoseの準備とGPU検証
 

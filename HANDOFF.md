@@ -1,6 +1,6 @@
 # 実装チャットへの引き継ぎ
 
-更新日：2026-11-04。確定仕様はdocs/implementation-spec.md v1.4。最新のユーザー指示とAGENTS.mdを優先する。
+更新日：2026-11-05。確定仕様はdocs/implementation-spec.md v1.4。最新のユーザー指示とAGENTS.mdを優先する。
 
 ## 現在地
 
@@ -9,11 +9,11 @@
 | 項目 | 状態 |
 | --- | --- |
 | 作業先 | abert / taku / /home/taku/he-pose-mtg |
-| 共通基盤・モデル | 3モデルの録画工程を実装。TARはfeat/tar-vitposeでGPU検証済み。最新GPU検証コミット73ee1beはGitHubへpush済み |
+| 共通基盤・モデル | 3モデルの録画工程をmainに統合し、同じ運動動画でGPU検証済み |
 | YOLO26n-Pose | 公式画像・反復画像動画・実際の運動動画をGPU検証済み。DETR工程で共通GPU確認処理を分離した後もGPU回帰確認 |
 | DETRPose-N | feat/detrposeで画像・動画・共通CLIを実装し、公式画像APIとの座標一致と375フレーム動画をGPU検証済み |
 | 最新のDETR実動画検証ソース | a92b2c047fb8ff3b5b3fef255c57be8b72ae96e3、dirty=false |
-| 単体テスト | モデル不要86件＋11 subtests。ruff／CLI helpも確認。TAR工程のLinux／macOS CI（73ee1be）成功。最新状況をActionsで確認する |
+| 単体テスト | モデル不要99件＋11 subtests、ruff、CLI help。最新のLinux／macOS CIはActionsを参照 |
 | モデル環境 | .venv-yolo26、固定版とハッシュはenvironments/yolo26/uv.lock |
 | 重み | models/yolo26/yolo26n-pose.pt、公式SHA256照合済み。Git管理外 |
 | 実動画 | CC BY-SA 4.0素材を15秒・25fps・375フレームへ変換。出典はassets/sample/jumping-jacks-ATTRIBUTION.md |
@@ -22,8 +22,9 @@
 | TAR-ViTPose | .venv-tar、公式Base・ViTPose初期重み・YOLO11x、公式コード無修正。設定の不足キーを補いローカルパスを使用 |
 | TARのGPU検証 | ソース73ee1be347634192565c8fec6bd51c457a39d0a0、dirty=false。共通375枚（371成功＋境界4枚）、公式CLI371枚。outputs/tar-final-gpu |
 | 全モデルのdoctor | abertの割当GPU 0で3モデルともready=true。work/doctor-all-gpu.json |
-| GitHub同期 | TARブランチは73ee1beまでpush済み。初回のInternal Server Errorは再試行で解消。mainへ統合し、以降も通常pushを続ける |
-| 未完了の必須機能 | Mac遠隔ライブ、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
+| 遠隔ライブ | Linuxクライアント→SSH→abertのRTX 3090を実証。25 FPS録画再送は375枚中369枚を描画、6枚を置き換え。切断・Ctrl+C・期限後のワーカー終了を確認 |
+| 最新の遠隔ライブ検証 | コミット0af7c37、outputs/live-ssh-final。再現手順・負荷試験・制限はdocs/pr-notes/remote-live.md |
+| 未完了の必須機能 | Mac実機のカメラ・表示、benchmark、compare、最終3素材、MTGガイド、3人分の受入 |
 | GitHub公開範囲 | 2026-11-04にユーザーが公開管理を明示許可。APIのpublic設定と一致し、push保留は解除済み |
 
 各モデルの実動作・TDD・制限はdocs/pr-notes/、機械可読の証拠はdocs/experiments/に記録する。全プロジェクトの完了ではない。DETRの取得不能な矩形・関節confidence・visibilityはnull。TARはhead_bottom／head_topをnative関節へ保持し、COCOの目・耳はnullとする。TARの境界4枚も元時間軸で保存する。
@@ -54,11 +55,10 @@ Macからの接続確認ではなく、現在の実行環境からabertへの接
 
 | ブランチ | 内容 |
 | --- | --- |
-| feat/remote-live | Macカメラ、SSHトンネル、Linuxワーカー、同一フレームへの返送・描画、切断・終了 |
 | feat/benchmark | 同一GPU・同一素材で順次測定、比較動画、表・レポート |
 | docs/mtg-materials | GoogleドキュメントのようなMTGガイドのMarkdown原稿、進行表・台本・チートシート・まとめ |
 
-各人のMac→専用Linux GPU→Mac表示という構成を維持する。YOLO26とDETRPoseは3人全員、TARは代表環境で実証する。開催日と準備期限は未定。
+各人のMac→専用Linux GPU→Mac表示はREADMEの手順で別途受け入れる。YOLO26とDETRPoseは3人全員、TARは代表環境で実証する。開催日と準備期限は未定。
 
 ## 上流調査の注意点
 
