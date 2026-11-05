@@ -1,35 +1,14 @@
-<p align="center">
-  <img src="assets/readme/cover.svg" alt="HE POSE MTG — Human pose estimation" width="100%">
-</p>
+# HE Pose MTG
 
-<h1 align="center">HE Pose MTG</h1>
+HE研究室の3人・90分向けの姿勢推定ハンズオンです。Macのカメラで試し、同じ録画を3モデルで見比べます。
 
-<p align="center">
-  <strong>MacのカメラからLinux GPUへ。3つのモデルで、同じ動きの骨格推定を見比べる。</strong>
-  <br>
-  HE研究室の3人・90分のハンズオン
-</p>
-
-<p align="center">
-  <a href="docs/mtg/guide.md"><strong>MTGガイド</strong></a> &nbsp;·&nbsp;
-  <a href="#セットアップ">準備</a> &nbsp;·&nbsp;
-  <a href="#macからyolo26を遠隔実行する">ライブ</a> &nbsp;·&nbsp;
-  <a href="#abertでの実測">実測</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/taku0193/he-pose-mtg/actions/workflows/ci.yml"><img src="https://github.com/taku0193/he-pose-mtg/actions/workflows/ci.yml/badge.svg?branch=main" alt="モデル不要のテストとLint（Linux・macOS）"></a>
-</p>
-
----
+[MTGガイド](docs/mtg/guide.md) · [セットアップ](#セットアップ) · [遠隔ライブ](#macからyolo26を遠隔実行する) · [実測結果](#abertでの実測)
 
 ## できること
 
-- **ライブ**　Macから映像を送り、LinuxのRTX 3090でYOLO26を実行。同じフレームに骨格を重ねてMacに表示します。
+- **ライブ**　Macのカメラ映像をSSHでLinuxへ送り、RTX 3090で推定した骨格をMacで元の映像に重ねます。
 - **録画比較**　同じMP4を3モデルで処理し、元フレームと時刻を揃えて横並びで再生します。
 - **計測**　同じGPU・同じ100フレームで順番に実行し、処理FPS、推論時間、環境を保存します。
-
-![Macでカメラ画像を取得し、SSHでLinux GPUへ送信。YOLO26が返した関節をMacで元の画像に重ねる。](assets/readme/pipeline.svg)
 
 ライブは一度に1フレームを送り、処理中に届いた画像は最新の1枚だけを待機させます。録画では入力順を保ち、TARの前後各2フレームを `NOT ESTIMATED` と表示します。
 
@@ -54,8 +33,7 @@ RTX 3090を1台使い、15秒・25 FPSの運動動画で計測しました。PyT
 
 録画処理FPSには復号・描画・フレーム単位の書き込みを含みます。推論時間はモデルのforwardを測った値です。精度はN/A（GTなし）。[実測の条件と集計](docs/pr-notes/benchmark.md) · [3素材の実行記録](docs/experiments/mtg-abert-2026-11-05.json)
 
-> [!NOTE]
-> abertでは3素材の録画推論・同期比較と、LinuxからのSSH録画再送を確認済みです。参加者3人のMac実機でのカメラ・表示・結果回収は、[受入表](docs/mtg/acceptance.md)で個別に確認します。
+abertでは3素材の録画推論・同期比較と、LinuxからのSSH録画再送を確認済みです。参加者3人のMac実機でのカメラ・表示・結果回収は、[受入表](docs/mtg/acceptance.md)で個別に確認します。
 
 ## セットアップ
 
@@ -134,4 +112,4 @@ Macに `scp` で出力フォルダを持ち帰ると、`comparison.mp4` と `rep
 | **[受入表](docs/mtg/acceptance.md) / [観察メモ](docs/mtg/observations.md)** | 参加者ごとの結果と、次に試す仮説 |
 | **[参考文献とライセンス](docs/mtg/references.md)** | モデル・重み・素材の出典と利用条件 |
 
-開発者向けの入口は [実装仕様](docs/implementation-spec.md)、[テスト手順](docs/setup.md#テスト)、[開発ルール](AGENTS.md)、[引き継ぎ](HANDOFF.md) です。
+開発者向けの入口は [実装仕様](docs/implementation-spec.md)、[テスト手順](docs/setup.md#テスト)、[CI](https://github.com/taku0193/he-pose-mtg/actions/workflows/ci.yml)、[開発ルール](AGENTS.md)、[引き継ぎ](HANDOFF.md) です。
